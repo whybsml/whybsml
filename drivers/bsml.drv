@@ -1,0 +1,8 @@
+module bsml.BSML
+    syntax type par "Bsml.par"
+    syntax val bsp_p "Bsml.bsp_p"
+    syntax val mkpar "Bsml.mkpar %1"
+    syntax val apply "Bsml.apply %1 %2"
+    syntax val proj "Bsml.proj %1 %2"
+    syntax val put "Bsml.put %1"
+end

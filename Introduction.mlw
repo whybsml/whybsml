@@ -1,0 +1,27 @@
+(** {1 Introduction (Start Here!) } *)
+
+(** {2 Overview} *)
+
+(**
+The OCaml language is a versatile programming language that combines functional, imperative and object-oriented paradigms. {h <a href="https://bsml-lang.github.io">BSML</a>} (Bulk Synchronous Parallel ML) is an OCaml-based library that embodies the principles of the BSP (Bulk Synchronous Parallel) model. It provides a range of constants and functions to facilitate BSP programming. 
+
+The BSP machine, viewed as a homogeneous distributed memory system with a point-to-point communication network and a global synchronization unit, serves as the underlying architecture for BSML. Note that is is an abstract view: any general purpose parallel architecture can be seen as a BSP computer. For example, a shared memory machine can be seen as a BSP computer: each core can be assigned a private part of the memory, the communication can be implemented via shared memory and finally the synchronization unit can be implemented as software. Even in the case of a distributed memory machine built by linking servers via a high performance network, the synchronizatino unit part is rarely provided by hardware: it is implemented by software. 
+
+ BSP programs, composed of consecutive super-steps, run on this kind of machine. The execution of each super-step follows a distinct pattern, starting with the computation phase where each processor-memory pair performs local computations using data available locally. This phase is followed by the communication phase, during which processors can request and exchange data with other processors. Finally, the synchronization phase concludes the super-step, synchronizing all processors globally.
+
+With its collection of four expressive functions and constants like "bsp_p" representing the number of processors in the BSP machine, BSML empowers developers to create BSP algorithms. While OCaml supports imperative programming and BSML can exploit it, in WhyBSML we only consider the pure functional aspects of OCaml and BSML. This deliberate focus differentiates it from the imperative counterparts provided by libraries such BSPlib for C. 
+
+WhyBSML is a set of modules that formalize the BSML primitives and use this formalization to implement and verify parallel functions:
+
+{h <ul>}
+{h <li>} {h <a href="bsml.html">bsml.mlw</a>} is a formalization of the BSML primitives {h </li>}
+{h <li>} {h <a href="stdlib.html">stdlib.mlw</a>} provides verified parallel function implemented with BSML primitives and that constitute (a sub-set of) the BSML standard library {h </li>}
+{h <li>} {h <a href="skeletons.html">skeletons.mlw</a>} offers the `map` and `reduce` algorithmic skeletons. {h <a href="https://homepages.inf.ed.ac.uk/mic/Pubs/skeletonbook.pdf">Algorithmic skeletons</a>} are patterns of parallel algorithms {h </li>}
+{h <li>} {h <a href="mps.html">mps.mlw</a>} is a specification, sequential implementation, and parallel implementation of the maximum prefix sum {h </li>}
+{h <li>} {h <a href="sequential.html">sequential.mlw</a>} is a set of sequential functions (mostly on lists) used in the other modules of WhyBSML {h </li>}
+{h </ul>}
+*)
+
+(** {2 Usage} *)
+
+(** See {h <a href="README.html">README.md</a> *)

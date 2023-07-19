@@ -1,3 +1,13 @@
+# Why3
+why3session.xml
+why3shapes.gz
+html
+*.bak
+
+# OCaml
+._bcdi/
+._d/
+._ncdi/
 *.annot
 *.cmo
 *.cma
@@ -7,6 +17,7 @@
 *.cmx
 *.cmxs
 *.cmxa
+*.so
 
 # ocamlbuild working directory
 _build/
