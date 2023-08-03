@@ -11,6 +11,9 @@ doc:
 replay:
 	why3 replay -L . .
 
+ide:
+	why3 ide -L . .
+
 wc:
 	why3 wc --factor $(FILES)
 

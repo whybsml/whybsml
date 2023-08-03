@@ -27,7 +27,8 @@ WhyBSML is a formalization of the core module of the [BSML](https://bsml-lang.gi
 
 In the root directory:
 
-- `make doc` generates the documentation in `html` 
+- `make doc` generates the documentation in `html` it also generates the HTML summary of the verification session in `why3session.html`
+- `make replay` replays the verification session
 - `make compile` generates the OCaml code from the WhyML development and compiles all the dependencies. In `application`, `mps.byte` and `mps.native` are respectively the bytecode and native code executable application programs.
 - `make clean` remove the generated files
 

@@ -2,7 +2,14 @@
 
 module MPS 
   use sequential.Int
-  use sequential.List 
+  use sequential.ListBasic
+  use sequential.ListMap
+  use sequential.ListAppend
+  use sequential.ListMaximum   
+  use sequential.ListSum
+  use sequential.ListPrefix
+  use sequential.ListFirstHomomorphismTheorem
+  use sequential.ListFold
   use bsml.BSML
   use stdlib.Base
   use sequential.Pair
@@ -103,7 +110,7 @@ module MPS
         assert { ms Nil = (0,0) };
         assert { op (0,0) (ms l2) = ms l2 }
     | Cons x xs ->
-        concat_cons x xs l2;
+        app_cons x xs l2;
         ms_homomorphic xs l2;
         ms_cons x (xs++l2);
         assert { op (f x)(op (ms xs) (ms l2)) =

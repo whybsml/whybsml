@@ -142,7 +142,7 @@ module Comm
       0 < offset < bsp_p ->
       shift_pid (bsp_p-offset) (shift_pid offset pid) = pid
      
-  let shift (offset : int) (v: par 'a) (* CVC5 *)
+  let shift (offset : int) (v: par 'a)
     requires { 0 <= offset < bsp_p } 
     ensures { offset > 0 -> forall i:int. 0 <= i < bsp_p ->
                        get result i = get v (shift_pid (bsp_p - offset) i) }

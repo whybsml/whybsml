@@ -46,7 +46,7 @@ module Algebra
       0 <= i < length xs -> 
       inv(nth i xs) = inv(nth (i+1) (Cons x xs))
     
-  lemma tail_satisfies: (* Z3 *)
+  lemma tail_satisfies:
     forall inv: 'a ->bool, x:'a, xs: list 'a.
     satisfies inv (Cons x xs) -> satisfies inv xs
 
@@ -91,18 +91,24 @@ end
 
 (** {2 Lists} *)
 
-module List 
+(** {3 Basic definitions, properties and notation for lists} *)
 
+module ListBasic 
   use export list.List 
   use export list.Length
   use export list.NthNoOpt
-  use export list.Append
   use Int
-  use Algebra
-  use Pair
     
   (** An alias for the non-optional [nth] in list.NthNoOpt. *)
   function ([]) (l : list 'a) (i : int) : 'a = nth i l
+  
+end
+
+(** {3 List extensionality} *)
+
+module ListExtensionality 
+  use ListBasic
+  use Int
 
   let rec lemma extensionality (l l': list 'a)
      requires { length l = length l'}
@@ -119,8 +125,67 @@ module List
         extensionality xs ys
       end
     end  
+    
+end
 
-  (** {3 Init and applications} *)
+
+(** {3 Append} *)
+
+module ListAppend 
+  use export list.Append
+  use ListBasic
+  use Algebra
+  use Int
+  
+  lemma app_cons: 
+    forall x : 'a,  xs ys: list 'a. 
+      (Cons x xs) ++ ys = Cons x (xs++ys)  
+      
+  let rec lemma app_satisfies (inv: 'a->bool)(l1 l2: list 'a)
+    requires { satisfies inv l1 }
+    requires { satisfies inv l2 }
+    ensures { satisfies inv (l1++l2) } 
+  = match l1 with 
+    | Nil -> ()
+    | Cons _ xs -> app_satisfies inv xs l2
+    end   
+    
+  lemma app_assoc: 
+    associative (fun (_:list 'a)->true) (++)
+
+  lemma app_neutral: 
+    neutral (fun (_:list 'a) -> true) (++) Nil
+
+  let rec lemma nth_append_left (l1 l2: list 'a) (i: int)
+    requires { 0 <= i < length l1 }
+    ensures { (l1++l2)[i] = l1[i] }
+  = match l1 with
+    | Nil -> ()
+    | Cons _ xs ->
+      if i = 0
+      then ()
+      else nth_append_left xs l2 (i-1)
+    end
+	  
+  let rec lemma nth_append_right (l1 l2: list 'a) (i: int)
+    requires { length l1 <= i < length (l1++l2) }
+    ensures { (l1++l2)[i] = l2[i-length l1] }
+  = match l1 with 
+	  | Nil -> ()
+	  | Cons _ xs -> 
+	    if i = 0 
+	    then ()
+	    else nth_append_right xs l2 (i-1)
+	  end
+
+end
+
+(** {3 Init and applications} *)
+  
+module ListInit
+  use ListBasic
+  use ListAppend
+  use Int
 
   let rec function init_aux (start: int) (size:int) (f : int ->'a) : list 'a
     ensures { forall i:int. 0 <= i < length result -> result[i] = f (start+i) }
@@ -145,7 +210,23 @@ module List
     variant { finish - start }
   = init_aux start (finish-start+1) (fun i->i)
 
+   let rec lemma from_to_succ (start finish: int)
+    requires { start <= finish } 
+    ensures { from_to start finish = 
+              (from_to start (finish - 1)) ++ Cons finish Nil }
+    variant { finish - start }
+  = if finish <= start
+    then ()
+    else from_to_succ (start+1) finish 
+
+end
+
 (** {3 Map} *)
+
+module ListMap
+  use ListBasic
+  use ListAppend
+  use Int
 
   (** [map f [x1;...;xn]] = [f x1;...;f xn] *) 
   let rec function map (f: 'a -> 'b) (xs: list 'a) : list 'b 
@@ -165,9 +246,12 @@ module List
     | Cons _ xs -> map_ext f g xs
     end
 
-  lemma map_map:
-    forall f: 'b->'c, g: 'a->'b, l: list 'a.
-      map f (map g l) = map (fun x->f(g x)) l    
+  let rec lemma map_map (f: 'b->'c) (g: 'a->'b) (l: list 'a)
+    ensures { map f (map g l) = map (fun x->f(g x)) l }
+  = match l with 
+    | Nil -> ()
+    | Cons _ xs -> map_map f g xs
+    end
 
   let rec lemma map_app (f:'a->'b) (l1 l2: list 'a)
     ensures { map f (l1++l2) = (map f l1)++(map f l2) }
@@ -175,16 +259,84 @@ module List
     | Nil -> ()
     | Cons _ xs -> map_app f xs l2
     end
+    
+  lemma map_cons: 
+    forall f:'a ->'b, x : 'a,  xs : list 'a. 
+      map f (Cons x xs) = Cons (f x)(map f xs)
 
-  (** {3 Folds} *)
+end 
 
-  let rec function fold_left (f : 'a -> 'b -> 'a) (e : 'a) (xs : list 'b) : 'a
+(** {3 Map2} *)
+
+module ListMap2
+  use ListBasic
+  use Int
+  
+  (** [map2 f [x1;...;xn][y1;...;yn] = [f x1 y1;...;f xn yn] *) 
+  let rec function map2 (f: 'a->'b->'c) (xs: list 'a) (ys: list 'b) : list 'c
+    ensures { length result = min (length xs) (length ys) }
+    ensures { forall i:int. 0 <= i < length result -> result[i] = f (xs[i])(ys[i]) }
+    variant { xs }
+  = match xs, ys with 
+    | Nil, _ -> Nil
+    | _, Nil -> Nil
+    | Cons x xs, Cons y ys -> Cons (f x y) (map2 f xs ys)
+    end
+
+end
+
+(** {3 Map3} *)
+
+module ListMap3
+  use ListBasic
+  use Int
+  
+  let rec function map3 (f: 'a->'b->'c->'d) (xs: list 'a) (ys: list 'b) (zs: list 'c) : list 'd
+    ensures { length result = min (length xs) (min (length ys) (length zs)) }
+    ensures { forall i:int. 0 <= i < length result -> result[i] = f (xs[i])(ys[i])(zs[i]) }
+    variant { xs }
+  = match xs, ys, zs with 
+    | Nil, _, _ -> Nil
+    | _, Nil, _ -> Nil
+    | _, _, Nil -> Nil
+    | Cons x xs, Cons y ys, Cons z zs -> Cons (f x y z) (map3 f xs ys zs)
+    end
+  
+end
+
+(** {3 Folds} *)
+
+module ListFold
+  use ListBasic
+  use ListAppend
+
+  let rec function fold_left (f: 'a ->'b->'a) (e: 'a) (xs: list 'b) : 'a
     variant { xs } 
   = match xs with 
     | Nil -> e
     | Cons x xs -> fold_left f (f e x) xs 
     end 
+    
+  let rec lemma fold_left_app (op: 'a->'a->'a) (e: 'a)
+    (l1 l2: list 'a)
+    ensures { fold_left op e (l1++l2) = 
+              fold_left op (fold_left op e l1) l2 } 
+  = match l1 with 
+    | Nil -> ()
+    | Cons x xs -> fold_left_app op (op e x) xs l2
+    end 
+    
+end
 
+(** {3 Folds when the operator forms a monoid} *)
+
+module ListFoldMonoid
+  use list.Append
+  use ListFold  
+  use ListBasic
+  use Algebra
+  use Int
+    
   let rec lemma fold_left_inv (inv:'a->bool)(op:'a->'a->'a)(x:'a)(xs: list 'a)
     requires { inv x /\ forall i:int. 0<=i<length xs->inv (xs[i]) }
     requires { preserves inv op }
@@ -194,16 +346,7 @@ module List
     | Cons x' xs' -> 
         let _ = assert { forall i:int. 0<=i<length xs'-> xs'[i] = xs[i+1] } in
         fold_left_inv inv op (op x x') xs' 
-    end
-    
-  let rec lemma fold_left_app (op:'a->'a->'a)(e:'a)
-    (l1 l2: list 'a)
-    ensures { fold_left op e (l1++l2) = 
-              fold_left op (fold_left op e l1) l2 } 
-  = match l1 with 
-    | Nil -> ()
-    | Cons x xs -> fold_left_app op (op e x) xs l2
-    end 
+    end  
     
   let rec lemma fold_left_preserves     
     (inv:'a->bool)(op:'a->'a->'a)(a:'a)(l: list 'a)
@@ -234,54 +377,23 @@ module List
     ensures { fold_left (++) (x ++ Nil) xs =
               x ++ fold_left (++) Nil xs } 
   = fold_left_prop (fun _->true) (++) x Nil xs
+  
+end
 
-  (** {3 Applications of folds} *)
+(** {3 Flatten} *)
+
+module ListFlatten
+  use ListBasic
+  use ListFold
+  use ListFoldMonoid
+  use ListAppend
+  use ListMap
+  use Algebra
+  use Int
 
   let function flatten (l:list(list 'a)) : list 'a = 
     fold_left (++) Nil l
-
-  let function sum (l: list int) : int = 
-    fold_left (+) 0 l
-
-  let rec function maximum (l : list int) : int 
-    requires { length l > 0 } 
-    variant { l }
-  = match l with 
-    | Nil -> absurd
-    | Cons h Nil -> h 
-    | Cons h t -> max h (maximum t)
-    end  
-        
-  let lemma sum_cons (x:int) (xs: list int) 
-    ensures { sum (Cons x xs) = x + sum xs }
-  = fold_left_prop (fun (_:int)->true) (+) x 0 xs
-
-  lemma maximum_cons:
-    forall x: int, xs: list int.
-    length xs > 0 ->
-    maximum (Cons x xs) = max x (maximum xs)
-
-  lemma map_cons: 
-    forall f:'a ->'b, x : 'a,  xs : list 'a. 
-      map f (Cons x xs) = Cons (f x)(map f xs)
-      
-  lemma concat_cons: 
-    forall x : 'a,  xs ys: list 'a. 
-      (Cons x xs) ++ ys = Cons x (xs++ys)    
-  
-  let rec lemma flatten_cons (x: list 'a)(xs: list(list 'a))
-    ensures { flatten(Cons x xs) = x ++ (flatten xs) }
-  = fold_left_app_prop x xs
-  
-  let rec lemma app_satisfies (inv: 'a->bool)(l1 l2: list 'a)
-    requires { satisfies inv l1 }
-    requires { satisfies inv l2 }
-    ensures { satisfies inv (l1++l2) } 
-  = match l1 with 
-    | Nil -> ()
-    | Cons _ xs -> app_satisfies inv xs l2
-    end 
- 
+    
   let rec lemma flatten_satisfies (inv: 'a->bool) 
     (ll: list(list 'a)) 
     requires { forall i:int. 0 <= i < length ll -> 
@@ -299,7 +411,11 @@ module List
       let _ = assert { satisfies inv l } in
       ()
     end 
- 
+        
+  let rec lemma flatten_cons (x: list 'a)(xs: list(list 'a))
+    ensures { flatten(Cons x xs) = x ++ (flatten xs) }
+  = fold_left_app_prop x xs
+  
   let rec lemma flatten_map (f:'a ->'b)(l:list(list 'a))  
     ensures { flatten(map (map f) l) = map f (flatten l) }
   = match l with 
@@ -313,7 +429,11 @@ module List
     | Nil -> ()
     | Cons _ xs -> flatten_app xs l2
     end
-
+    
+  lemma flatten_fequal:
+    forall l1 l2: list(list 'a). 
+      l1 = l2 -> flatten l1 = flatten l2
+    
   let rec lemma fold_left_flatten (inv: 'a->bool)
     (op: 'a->'a->'a) (e:'a)(ll: list(list 'a))
     requires { associative inv op }
@@ -334,14 +454,74 @@ module List
         fold_left_flatten inv op e ls;
         fold_left_prop inv op a e (map f ls)
     end
+
+end
+
+(** {3 Sum of a list of integers} *)
+
+module ListSum
+  use ListBasic
+  use ListFold
+  use ListFoldMonoid
+  use ListAppend
+  use Int
   
-  (** {3 Homomorphisms and the First Homomorphism Theorem} *)
+  let function sum (l: list int) : int = 
+    fold_left (+) 0 l
+    
+  let lemma sum_cons (x:int) (xs: list int) 
+    ensures { sum (Cons x xs) = x + sum xs }
+  = fold_left_prop (fun (_:int)->true) (+) x 0 xs
+
+  let rec lemma sum_app (l1 l2: list int)
+    ensures { sum(l1++l2) = sum l1 + sum l2 }
+  = match l1 with 
+    | Nil -> ()
+    | Cons _ xs -> sum_app xs l2 
+    end
+
+end    
+    
+(** {3 Maximum of a non-empty list of integers} *)
+
+module ListMaximum 
+  use ListBasic
+  use ListFold
+  use ListFoldMonoid
+  use Algebra
+  use Int
+
+  let rec function maximum (l : list int) : int 
+    requires { length l > 0 } 
+    variant { l }
+  = match l with 
+    | Nil -> absurd
+    | Cons h Nil -> h 
+    | Cons h t -> max h (maximum t)
+    end  
+        
+  lemma maximum_cons:
+    forall x: int, xs: list int.
+    length xs > 0 ->
+    maximum (Cons x xs) = max x (maximum xs)
+
+end  
+
+(** {3 Homomorphisms and the first homomorphism theorem} *)
+ 
+module ListFirstHomomorphismTheorem
+  use ListBasic
+  use ListAppend
+  use ListMap
+  use ListFold
+  
+  predicate homomorphic (h: list 'a->'b)(op: 'b->'b->'b) =
+    forall l1 l2: list 'a. h(l1++l2) = op(h l1)(h l2)
 
   let rec lemma fold_left_homomorphic
     (h: list 'a -> 'b)(op: 'b->'b->'b)
     (x:'a) (xs ys: list 'a)
-    requires { forall l1 l2: list 'a. 
-                      h(l1++l2) = op(h l1)(h l2) }
+    requires { homomorphic h op }
     ensures { 
       fold_left op (op(h (Cons x Nil)) (h ys)) 
         (map (fun x->h(Cons x Nil)) xs) =
@@ -355,8 +535,7 @@ module List
     
   let rec lemma first_homomorphism_theorem 
     (h: list 'a -> 'b)(op: 'b->'b->'b)(l: list 'a)
-    requires { forall l1 l2: list 'a. 
-                      h(l1++l2) = op(h l1)(h l2) }
+    requires { homomorphic h op }
     ensures { h l = fold_left op (h Nil) 
                       (map (fun x->h(Cons x Nil)) l) }
   = match l with 
@@ -366,38 +545,17 @@ module List
         first_homomorphism_theorem h op xs
     end
 
-  (** {3 Properties and applications of append} *)
+end
 
-  lemma app_assoc: 
-    associative (fun (_:list 'a)->true) (++)
+(** {3 Firstn and skipn} *)
 
-  lemma app_neutral: 
-    neutral (fun (_:list 'a) -> true) (++) Nil
-
-  let rec lemma nth_append_left (l1 l2: list 'a) (i: int)
-    requires { 0 <= i < length l1 }
-    ensures { (l1++l2)[i] = l1[i] }
-  = match l1 with
-    | Nil -> ()
-    | Cons _ xs ->
-      if i = 0
-      then ()
-      else nth_append_left xs l2 (i-1)
-    end
-	  
-  let rec lemma nth_append_right (l1 l2: list 'a) (i: int)
-    requires { length l1 <= i < length (l1++l2) }
-    ensures { (l1++l2)[i] = l2[i-length l1] }
-  = match l1 with 
-	  | Nil -> ()
-	  | Cons _ xs -> 
-	    if i = 0 
-	    then ()
-	    else nth_append_right xs l2 (i-1)
-	  end
-
-  (** {3 Firstn and skipn} *)
-	
+module ListFirstnSkipn
+  use ListBasic
+  use ListAppend
+  use ListExtensionality
+  use Pair
+  use Int
+  
   let rec cut (n: int) (l: list 'a) : (list 'a, list 'a)
     returns { l1, l2 -> l1 ++ l2 = l } 
     returns { l1, _ -> length l1 = min (max 0 n) (length l) }
@@ -435,7 +593,14 @@ module List
     ensures { skipn n1 (skipn n2 l) = skipn (n1+n2) l }
   = ()
   
-  (** {3 Prefix} *)
+end
+
+(** {3 Prefix} *)
+  
+module ListPrefix
+  use ListBasic
+  use ListMap
+  use Int
 
   let rec function take (n: int)(l:list 'a) : list 'a 
     ensures { length result = max 0 (min n (length l)) }
@@ -466,4 +631,22 @@ module List
       prefix (Cons x xs) = 
       Cons Nil (map (fun l->Cons x l) (prefix xs))
         
+end
+
+(** {3 All on lists} *)
+
+module List
+  use export ListBasic
+  use export ListExtensionality
+  use export ListAppend
+  use export ListInit
+  use export ListMap
+  use export ListFold
+  use export ListFoldMonoid
+  use export ListFlatten
+  use export ListSum
+  use export ListMaximum
+  use export ListFirstHomomorphismTheorem
+  use export ListFirstnSkipn
+  use export ListPrefix
 end

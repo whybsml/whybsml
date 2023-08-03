@@ -3,7 +3,12 @@
 module Skeletons 
 
   use sequential.Int
-  use sequential.List 
+  use sequential.ListBasic
+  use sequential.ListAppend
+  use sequential.ListMap 
+  use sequential.ListFold
+  use sequential.ListFoldMonoid
+  use sequential.ListFlatten
   use bsml.BSML
   use stdlib.Base
   use sequential.Pair
@@ -20,7 +25,7 @@ module Skeletons
     ensures { forall i:int. 0 <= i < bsp_p ->
                        get result i = map f (get dl i) }
     ensures { to_list result = map f (to_list dl) }
-  = let ghost _ = flatten_map f (list_of_par dl) in 
+  = let ghost _ = flatten_map f (list_of_par dl) in
     parfun (map f) dl
     
   let reduce_par (ghost inv: 'a->bool)
