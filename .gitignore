@@ -1,7 +1,10 @@
+# Extraction
+extraction/*.ml*
+
 # Why3
 why3session.xml
 why3shapes.gz
-html
+*html
 *.bak
 
 # OCaml
