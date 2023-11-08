@@ -1,0 +1,51 @@
+(** {1 Example: Average of a Lust of Integers *)
+
+module Average
+  use sequential.Int
+  use sequential.ListBasic
+  use sequential.ListMap
+  use sequential.ListAppend
+  use sequential.ListSum
+  use sequential.ListFirstHomomorphismTheorem
+  use sequential.ListFold
+  use bsml.BSML
+  use stdlib.Base
+  use sequential.Pair
+  use sequential.Algebra
+  use skeletons.Skeletons 
+
+  function avg_spec (l: list int) : (int, int) 
+  = (sum l, length l)
+
+  (** We parallelize by showing `avg_spec` is a homomorphic function. *)
+
+  let function op (x: (int,int)) (y: (int,int)) : (int,int)
+  = (fst  x + fst y, snd x + snd y)
+
+  let function f (x: int) = (x, 1)
+  
+  lemma avg_spec_f : 
+    forall x: int. avg_spec (Cons x Nil) = f x
+  
+  lemma avg_spec_Nil: avg_spec Nil = (0,0)
+
+  lemma avg_spec_homomophic: 
+    forall l1 l2: list int. 
+    avg_spec (l1 ++ l2) = op (avg_spec l1) (avg_spec l2)
+    
+  (** {2 A Sequential Implementation} *)
+
+  let avg_seq (l: list int) : (int, int) 
+    ensures { result = avg_spec l }
+  = let ghost _ = first_homomorphism_theorem avg_spec op l in
+    fold_left op (0,0) (map f l)
+
+
+  (** {3 A Parallel Implementation} *)
+
+  let avg_par (dl: par (list int)) : (int, int) 
+    ensures { result = avg_spec (to_list dl) }
+  = let ghost _ = first_homomorphism_theorem avg_spec op (to_list dl) in
+    reduce_par (fun x->true) op (0,0) (map_par f dl)
+
+end
