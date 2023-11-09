@@ -221,6 +221,36 @@ module ListInit
 
 end
 
+(** {3 Rev} *)
+
+module ListRev
+  use ListBasic
+  use ListAppend
+  use Int
+  
+  let rec rev_aux (xs acc: list 'a) : list 'a 
+    ensures { length result = length xs + length acc }
+    ensures { forall i:int. 0 <= i < length xs -> 
+                        result[i] = xs[length xs - 1 - i] }
+    ensures { forall i:int. 0 <= i < length acc -> 
+                        result[length xs + i] = acc[i] }
+    variant { xs }
+  = match xs with 
+    | Nil -> acc
+    | Cons x' xs' -> 
+      assert { forall i:int. 0 <= i < length acc -> 
+                        acc[i] = (Cons x' acc)[i+1] };
+      rev_aux xs' (Cons x' acc)
+    end 
+    
+  let rec rev (xs: list 'a) : list 'a 
+    ensures { length result = length xs }
+    ensures { forall i:int. 0 <= i < length xs -> 
+                        result[i] = xs[length xs - 1 - i] }
+  = rev_aux xs Nil 
+ 
+end 
+ 
 (** {3 Map} *)
 
 module ListMap
@@ -265,6 +295,41 @@ module ListMap
       map f (Cons x xs) = Cons (f x)(map f xs)
 
 end 
+
+(** {3 Tail recursive map } *)
+
+module ListTailRecMap
+  use ListBasic
+  use ListMap
+  use ListRev
+  use ListExtensionality
+  use Int
+  
+  let rec function map_aux (f: 'a -> 'b)(xs: list 'a)(acc: list 'b) : list 'b 
+    ensures { length result = length xs + length acc }
+    ensures { forall i:int. 0 <= i < length xs -> 
+                        result[i] = f (xs[length xs - 1 - i]) }
+    ensures { forall i:int. 0 <= i < length acc -> 
+                        result[length xs + i] = acc[i] }
+    variant { xs }
+  = match xs with 
+    | Nil -> acc
+    | Cons x' xs' -> 
+      assert { forall i:int. 0<=i<length acc -> 
+                        acc[i] = (Cons (f x') acc)[i+1] };
+      map_aux f xs' (Cons (f x') acc)
+    end 
+    
+  let function map' (f: 'a -> 'b)(xs: list 'a) : list 'b 
+    ensures { length result = length xs }
+    ensures { forall i:int. 0 <= i < length xs -> result[i] = f (xs[i]) }
+  = rev(map_aux f xs Nil)
+  
+  lemma map'_map:
+    forall f: 'a -> 'b, xs: list 'a.
+    map f xs = map' f xs
+  
+end
 
 (** {3 Map2} *)
 
@@ -640,7 +705,9 @@ module List
   use export ListExtensionality
   use export ListAppend
   use export ListInit
+  use export ListRev
   use export ListMap
+  use export ListTailRecMap
   use export ListFold
   use export ListFoldMonoid
   use export ListFlatten

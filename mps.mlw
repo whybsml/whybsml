@@ -4,6 +4,7 @@ module MPS
   use sequential.Int
   use sequential.ListBasic
   use sequential.ListMap
+  use sequential.ListTailRecMap
   use sequential.ListAppend
   use sequential.ListMaximum   
   use sequential.ListSum
@@ -129,8 +130,8 @@ module MPS
   let function mps_seq (l: list int) : int 
     ensures { result = mps_spec l } 
   = let ghost _ = first_homomorphism_theorem ms op l in
-    assert { fold_left op (0, 0) (map f l) = ms l };
-    fst (fold_left op (0, 0) (map f l))  
+    assert { fold_left op (0, 0) (map' f l) = ms l };
+    fst (fold_left op (0, 0) (map' f l))  
 
   (** {2 A parallel implementation} *)
 

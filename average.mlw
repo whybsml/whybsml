@@ -4,6 +4,7 @@ module Average
   use sequential.Int
   use sequential.ListBasic
   use sequential.ListMap
+  use sequential.ListTailRecMap
   use sequential.ListAppend
   use sequential.ListSum
   use sequential.ListFirstHomomorphismTheorem
@@ -38,7 +39,7 @@ module Average
   let avg_seq (l: list int) : (int, int) 
     ensures { result = avg_spec l }
   = let ghost _ = first_homomorphism_theorem avg_spec op l in
-    fold_left op (0,0) (map f l)
+    fold_left op (0,0) (map' f l)
 
 
   (** {3 A Parallel Implementation} *)
@@ -46,6 +47,6 @@ module Average
   let avg_par (dl: par (list int)) : (int, int) 
     ensures { result = avg_spec (to_list dl) }
   = let ghost _ = first_homomorphism_theorem avg_spec op (to_list dl) in
-    reduce_par (fun x->true) op (0,0) (map_par f dl)
+    reduce_par (fun _->true) op (0,0) (map_par f dl)
 
 end
