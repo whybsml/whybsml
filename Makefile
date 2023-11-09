@@ -1,6 +1,6 @@
 FILES=Introduction.mlw bsml.mlw sequential.mlw stdlib.mlw skeletons.mlw mps.mlw
 TITLE=WhyBSML ${shell cat VERSION}
-CODE=bsml wrapper extraction application
+CODE=bsml wrapper extraction application/cli application/mps application/average
 
 doc:
 	mkdir -p html
@@ -34,7 +34,7 @@ extract:
 	why3 extract -D ocaml64 -D drivers/option.drv -D drivers/bsml.drv --recursive --modular -L . stdlib.Comm  -o extraction
 	why3 extract -D ocaml64 -D drivers/option.drv -D drivers/bsml.drv --recursive --modular -L . skeletons.Skeletons  -o extraction
 	why3 extract -D ocaml64 -D drivers/option.drv -D drivers/bsml.drv --recursive --modular -L . mps.MPS  -o extraction
-
+	why3 extract -D ocaml64 -D drivers/option.drv -D drivers/bsml.drv --recursive --modular -L . average.Average  -o extraction
 
 compile: extract
 	for d in $(CODE); do make -C $$d; done

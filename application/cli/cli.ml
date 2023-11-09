@@ -11,7 +11,7 @@ let to_list (v:'a Bsmlmpi.par) : 'a list =
   let f  = Bsmlmpi.proj v in
   List.map f (List.map Z.to_int (procs()))
 
-let size =
+let size () =
   try
     int_of_string (Sys.argv.(1))
   with _ ->
@@ -20,23 +20,22 @@ let size =
       exit 1;
     end
 
-let _ =
+let run_homomorphism (f: Z.t list Bsml.par -> 'b) (print: 'b -> unit): unit = 
   Random.self_init ();
-  let input = Bsml.mkpar(fun _->create (size/Bsmlmpi.bsp_p)) in
+  let input = Bsml.mkpar(fun _->create (size()/Bsmlmpi.bsp_p)) in
   let _ = Bsmlmpi.start_timing() in
-  let output = Mps__MPS.mps_par input in
+  let output = f input in
   let _ = Bsmlmpi.stop_timing () in
   let cost = (fun (h::t)->List.fold_left max h t) (to_list (Bsmlmpi.get_cost())) in 
-  Bsmlmpi.mkpar(function
+  ignore(Bsmlmpi.mkpar(function
       | 0 ->
         begin
 	        print_int (Bsmlmpi.bsp_p);
           print_string "\t";
 	        print_float cost;
           print_string "\t";
-          print_int (Z.to_int output);
+          print output;
           print_newline ();
           flush stdout
         end
-      | _ -> ())
-
+      | _ -> ()))
