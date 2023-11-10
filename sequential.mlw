@@ -698,6 +698,30 @@ module ListPrefix
         
 end
 
+(** {3 Filter} *)
+
+module ListFilter
+  use ListBasic
+  use ListAppend
+
+  let rec function filter (p: 'a -> bool) (xs: list 'a) : list 'a 
+  = match xs with 
+    | Nil -> Nil 
+    | Cons x' xs' -> 
+      if p x' 
+      then Cons x' (filter p xs')
+      else filter p xs'
+    end
+
+  let rec lemma filter_append (p: 'a->bool)(l1 l2: list 'a) 
+    ensures { filter p (l1++l2) = filter p l1 ++ filter p l2 }
+  = match l1 with 
+    | Nil -> ()   
+    | Cons _ xs -> filter_append p xs l2 
+    end 
+
+end
+
 (** {3 All on lists} *)
 
 module List
