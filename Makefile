@@ -9,10 +9,10 @@ doc:
 	-pandoc --from gfm --to html --standalone -c html/style.css README.md --output html/README.html
 
 replay:
-	why3 replay -L . .
+	why3 replay -L . session
 
 ide:
-	why3 ide -L . .
+	why3 ide -L . session *.mlw 
 
 wc:
 	why3 wc --factor $(FILES)
@@ -25,6 +25,9 @@ clean:
 	-rm -f extraction/*.bak
 	for d in $(CODE); do make -C $$d clean; done
 
+cleanup: clean
+	rm -Rf session
+
 extract:
 	why3 extract -D ocaml64 -D drivers/option.drv --recursive --modular -L . sequential.Int  -o extraction
 	why3 extract -D ocaml64 -D drivers/option.drv --recursive --modular -L . sequential.List  -o extraction
@@ -35,6 +38,7 @@ extract:
 	why3 extract -D ocaml64 -D drivers/option.drv -D drivers/bsml.drv --recursive --modular -L . skeletons.Skeletons  -o extraction
 	why3 extract -D ocaml64 -D drivers/option.drv -D drivers/bsml.drv --recursive --modular -L . mps.MPS  -o extraction
 	why3 extract -D ocaml64 -D drivers/option.drv -D drivers/bsml.drv --recursive --modular -L . average.Average  -o extraction
+	why3 extract -D ocaml64 -D drivers/option.drv -D drivers/bsml.drv --recursive --modular -L . count.Count  -o extraction
 
 compile: extract
 	for d in $(CODE); do make -C $$d; done
