@@ -1,4 +1,4 @@
-(** {1 Example: Average of a Lust of Integers *)
+(** {1 Example: Average of a List of Integers *)
 
 module Average
   use sequential.Int
