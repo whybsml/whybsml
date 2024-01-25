@@ -1,4 +1,4 @@
-# WhyBSML version 0.1
+# WhyBSML version 0.2
 
 ## Authors
 
@@ -9,10 +9,9 @@
 
 For the verification part:
 
-- Why3 version 1.6.0
-- Alt Ergo 2.4.3
+- Why3 version 1.7.1
+- Alt Ergo 2.4.3 or higher
 - CVC4 version 1.6 or higher
-- Z3 version 4.12
 
 For the compilation part:
 
@@ -27,10 +26,14 @@ WhyBSML is a formalization of the core module of the [BSML](https://bsml-lang.gi
 
 In the root directory:
 
+- `make config` generates a WhyBSML proof strategy that is then
+available in WhyIDE
+- `make ide` launches Why3 IDE
 - `make doc` generates the documentation in `html` it also generates the HTML summary of the verification session in `why3session.html`
 - `make replay` replays the verification session
 - `make compile` generates the OCaml code from the WhyML development and compiles all the dependencies. In `application`, `mps.byte` and `mps.native` are respectively the bytecode and native code executable application programs.
-- `make clean` remove the generated files
+- `make clean` removes the generated files
+- `make cleanup` removes the session directory and the configured strategy
 
 ### Using the MPS application
 
@@ -44,10 +47,13 @@ In the root directory:
 - `sequential.mlw`: a library of sequential functions (mostly on lists)
 - `stdlib.mlw`: a verified BSML standard library
 - `skeletons.mlw`: verified map and reduce skeletons for parallel programming
+- `average.mlw`: verified parallel implementation for the computation of the average of a distributed list of integers
+- `count.mlw`: verified parallel implementation of a function counting the number of elements of a distributed list verifying a given predicate
 - `mps.mlw`: verified sequential and parallel implementations for the maximum prefix sum problem
 - `drivers`: Why3 drivers used to extract OCaml code from the `.mlw` files
 - `bsml`: a parallel implementation of the BSML code module on top of MPI
 - `wrapper`: the BSML core implementation uses OCaml's `int` type while `bsml.mlw` uses WhyML's `int` type which is extracted to the type `Z.t`. This wrapper manages the conversions between these two types
 - `extraction`: placeholder for the OCaml code extracted from our WhyML development (contains also a `Makefile`)
-- `application`: an executable application that calls the parallel maximum parallel prefix sum function on a randomly generated distributed list
+- `application/mps`: an executable application that calls the parallel maximum parallel prefix sum function on a randomly generated distributed list
+- `application/average`: an executable application that calls the parallel average function on a randomly generated distributed list
 - `ocamlmake`: Ocaml-makefile by Markus Mottl , used for compilation

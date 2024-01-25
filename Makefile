@@ -2,6 +2,11 @@ FILES=Introduction.mlw bsml.mlw sequential.mlw stdlib.mlw skeletons.mlw mps.mlw
 TITLE=WhyBSML ${shell cat VERSION}
 CODE=bsml wrapper extraction application/cli application/mps application/average
 
+config: strategy.conf 
+
+strategy.conf: config/strategy.conf.generic
+	config/conf_strategy.sh
+
 doc:
 	mkdir -p html
 	why3 doc --title "$(TITLE)" -L .  $(FILES) -o html
@@ -12,7 +17,7 @@ replay:
 	why3 replay -L . session
 
 ide:
-	why3 ide -L . session *.mlw 
+	why3 ide --extra-config strategy.conf -L . session *.mlw &
 
 wc:
 	why3 wc --factor $(FILES)
@@ -27,6 +32,7 @@ clean:
 
 cleanup: clean
 	rm -Rf session
+	rm -f strategy.conf
 
 extract:
 	why3 extract -D ocaml64 -D drivers/option.drv --recursive --modular -L . sequential.Int  -o extraction
