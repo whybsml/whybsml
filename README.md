@@ -2,21 +2,22 @@
 
 ## Authors
 
-- Olivia Proust, Université d'Orléans, France
 - Frédéric Loulergue, Université d'Orléans, France
+- Olivia Proust, Université d'Orléans, France
 
 ## Requirements
 
 For the verification part:
 
 - Why3 version 1.7.1
-- Alt Ergo 2.4.3 or higher
-- CVC4 version 1.6 or higher
+- Alt Ergo 2.5.2 or higher
+- CVC4 version 1.8 or higher
 
 For the compilation part:
 
 - [OPAM](https://opam.ocaml.org)
 - The conf-mpi [OPAM](https://opam.ocaml.org) package
+- An MPI library such as [OpenMPI](https://www.open-mpi.org) or [MPICH](https://www.mpich.org)
 
 ## Overview
 
@@ -31,13 +32,22 @@ available in WhyIDE
 - `make ide` launches Why3 IDE
 - `make doc` generates the documentation in `html` it also generates the HTML summary of the verification session in `why3session.html`
 - `make replay` replays the verification session
-- `make compile` generates the OCaml code from the WhyML development and compiles all the dependencies. In `application`, `mps.byte` and `mps.native` are respectively the bytecode and native code executable application programs.
-- `make clean` removes the generated files
-- `make cleanup` removes the session directory and the configured strategy
+- `make compile` generates the OCaml code from the WhyML development and compiles all the dependencies
+- `make clean` performs all of the following: 
+    - `make clean_config` removes the configured strategy
+    - `make clean_session` removes the session directory
+    - `make clean_doc` removes the generated documentation
+    - `make clean_extraction` removes the generated OCaml source code and compile code
 
-### Using the MPS application
+### Using the applications
 
-`mps.byte` and `mps.native` are executable as they are. They take as argument the size of the randomly generated (distributed) list. If ran directly they run using only one processor. To use several processors, `mpirun` with option `-np` is necessary. For example, `mpirun -np 400 application/mps.native 1_000_000` will run the (native code version of the) application on a list of one million numbers and will use 400 processors to do so (it is very likely that in this case the machine is a cluster of PCs or another kind of distributed memory machine).
+#### The *MPS* application
+
+In `application/mps`, `mps.byte` and `mps.native` are executable as they are. They compute the maximum prefix sum of a distributed list of integers. They take as argument the size of the randomly generated (distributed) list. If ran directly they run using only one processor. To use several processors, `mpirun` with option `-np` is necessary. For example, `mpirun -np 400 application/mps.native 1_000_000` runs the (native code version of the) application on a list of one million numbers and will use 400 processors to do so (it is very likely that in this case the machine is a cluster of PCs or another kind of distributed memory machine). 
+
+#### The *Average* application
+
+In `application/average`, `average.byte` and `average.native` are respectively the executable byte-code and native code versions of a program that computes the average of a distributed list of integers. Their usage is the same as the *MPS* applications.
 
 ## Structure
 
@@ -56,4 +66,4 @@ available in WhyIDE
 - `extraction`: placeholder for the OCaml code extracted from our WhyML development (contains also a `Makefile`)
 - `application/mps`: an executable application that calls the parallel maximum parallel prefix sum function on a randomly generated distributed list
 - `application/average`: an executable application that calls the parallel average function on a randomly generated distributed list
-- `ocamlmake`: Ocaml-makefile by Markus Mottl , used for compilation
+- `ocamlmake`: Ocaml-makefile by Markus Mottl, used for compilation
