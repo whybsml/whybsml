@@ -22,17 +22,23 @@ ide:
 wc:
 	why3 wc --factor $(FILES)
 
-clean:
+clean_config:
+	-rm -f strategy.conf
+
+clean_session:
+	-rm -Rf session
+	-rm -f why3session.html
+
+clean_doc:
 	-rm -Rf html
-	-rm why3session.html
+
+clean_extraction:
 	-rm -f *.bak
 	-rm -f extraction/*.ml
 	-rm -f extraction/*.bak
 	for d in $(CODE); do make -C $$d clean; done
 
-cleanup: clean
-	rm -Rf session
-	rm -f strategy.conf
+cleanup: clean_extraction clean_doc clean_session clean_config
 
 extract:
 	why3 extract -D ocaml64 -D drivers/option.drv --recursive --modular -L . sequential.Int  -o extraction
