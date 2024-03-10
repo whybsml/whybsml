@@ -2,7 +2,6 @@
 
 module BSML
   use int.Int
-    
   (** {2 Parallel vectors} *)
 
   (** Parallel vectors are the basic distributed data structure for BSML programs. 
@@ -22,7 +21,8 @@ module BSML
   (** In specifications only, the content of parallel vectors can be observed using 
       function `get`. *)
 
-  val ghost function get (_ : par 'a) (_ : int) : 'a
+  val ghost function get (_ : par 'a) (i : int) : 'a
+  
 
   (** The values of a parallel vector from index `0` to index `bsp_p-1` completely 
       define the parallel vector. *)

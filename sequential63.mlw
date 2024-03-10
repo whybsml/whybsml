@@ -3,24 +3,6 @@
 
 (** {2 On Integers} *)
 
-(* Module de test pour pouvoir vérifier les fonctions disponibles sur les int63 *)
-module Test63
-
-use export mach.int.Int63
-
-let test_le (x y : int63) = x <= y 
-
-let test_l (x y : int63) = x < y 
-
-(*let test_add (x y : int63)
-    requires { [@expl:integer overflow] x < max_int63 } 
-= x + y*) 
-
-(* Les fonctions <, <=, >= et > ne sont pas disponibles sur les pré et post conditions *)
-end
-
-(* Il existe déjà des fonctions min et max avec mach.int.MinMax63 cependant, why3 trouve le module mais 
-pas la fonction *)
 module Int63
   
 (* FROM THE DOCUMENTATION. FIXME *)
@@ -36,14 +18,23 @@ module Int63
     ensures { result = if to_int x >= to_int y then x else y }
   = if x >= y then x else y
 
+  (* FIXME utilisation dans les contrats *)
+  let function add63(x y : int63) : int63 
+  requires { [@expl:integer overflow] (to_int x + to_int y) >= min_int63 }
+  requires { [@expl:integer overflow] (to_int x + to_int y) <= max_int63 }
+  ensures{ result = x + y }
+  = x + y
+  
+  
 end
 
 (** {2 Basic Algebra} *)
 
-  module Algebra
+module Algebra
   use list.List
   use list.Length
   use list.NthNoOpt
+  use int.Int
   use Int63
 
   predicate associative (inv: 'a->bool) (op: 'a->'a->'a) = 
@@ -57,32 +48,37 @@ end
   predicate preserves (inv: 'a->bool) (op: 'a->'a->'a) = 
     forall x y : 'a. inv x -> inv y -> inv (op x y)
 
-  (*predicate satisfies (inv: 'a->bool) (l: list 'a) = 
-    forall i:int63. i < ((length l):int63) -> inv (nth i l)*)
+  predicate satisfies (inv: 'a->bool) (l: list 'a) = 
+    forall i:int63. 0 <= to_int i < (length l) -> inv (nth i l)
     
-  (*lemma tail_satisfies_aux :
+  lemma tail_satisfies_aux :
     forall inv: 'a->bool, x:'a, xs: list 'a, i:int63.  
-      0 <= to_int i < length xs -> 
-      inv(nth i xs) = inv(nth (i+1) (Cons x xs))*)
+      (0 <= to_int i < length xs /\ length xs <= max_int63) -> 
+      inv(nth i xs) = inv(nth (add63 i (1:int63)) (Cons x xs))
     
-  (*lemma tail_satisfies:
-    forall inv: 'a ->bool, x:'a, xs: list 'a.
-    satisfies inv (Cons x xs) -> satisfies inv xs*)
+  lemma tail_satisfies:
+    forall inv: 'a ->bool, x:'a, xs: list 'a. 
+    length xs <= max_int63 /\ satisfies inv (Cons x xs) 
+    -> satisfies inv xs
 
   lemma max_assoc: associative (fun (_:int63)->true) max
+ 
+  (* TODO : pas la main sur les trois opérandes pour pouvoir borner le résultat *)
+  lemma add_assoc: associative (fun (x :int63)-> min_int63 <= x <= max_int63) add63
   
-  
-  (*FIXME : don't find the function (+)*)
-  (*lemma add_assoc: associative (fun (_:int63)->true) (+)*)
-  
-  (*lemma add_neutral: neutral (fun (_:int63)->true) (+) 0*)
+  lemma add_neutral: neutral (fun (_:int63)->true) add63 zero
 
-  (*lemma max_add_distr: forall x y z: int63. 
-      x + max y z = max (x+y) (x+z)*)
+  lemma max_add_distr: forall x y z: int63. 
+      min_int63 <= to_int x + to_int y <= max_int63 
+      /\ min_int63 <= to_int x + to_int z <= max_int63
+      /\ min_int63 <= to_int y + to_int z <= max_int63 ->
+      add63 x (max y z) = max (add63 x y) (add63 x z)
 
+  
+  
 end
 
-(*(** {2 The option Type} *)
+(** {2 The option Type} *)
 
 module Option
   use export option.Option
@@ -118,10 +114,10 @@ module ListBasic
   use export list.List 
   use export list.Length
   use export list.NthNoOpt
-  use Int
+  use Int63
     
   (** An alias for the non-optional [nth] in list.NthNoOpt. *)
-  function ([]) (l : list 'a) (i : int) : 'a = nth i l
+  function ([]) (l : list 'a) (i : int63) : 'a = nth i l
   
 end
 
@@ -129,11 +125,14 @@ end
 
 module ListExtensionality 
   use ListBasic
-  use Int
+  use int.Int
+  use Int63
 
   let rec lemma extensionality (l l': list 'a)
      requires { length l = length l'}
-     requires { forall i: int. 0 <= i < length l -> l[i] = l'[i] }
+     requires { length l <= max_int63 }
+     requires { length l' <= max_int63 }
+     requires { forall i: int63. 0 <= i < length l -> l[i] = l'[i] }
      ensures { l = l' }
      variant { l }
   = match l with 
@@ -142,7 +141,8 @@ module ListExtensionality
       match l' with 
       | Nil -> absurd 
       | Cons _ ys -> 
-        let _ = assert { forall i:int. 0<=i<length xs-> xs[i]=l[i+1] } in
+        let _ = assert { forall i:int63. 0 <= (to_int i) < length xs ->
+         xs[i]=l[add63 i (1:int63)] } in
         extensionality xs ys
       end
     end  
@@ -156,13 +156,15 @@ module ListAppend
   use export list.Append
   use ListBasic
   use Algebra
-  use Int
+  use Int63
+  use int.Int
   
   lemma app_cons: 
     forall x : 'a,  xs ys: list 'a. 
       (Cons x xs) ++ ys = Cons x (xs++ys)  
       
   let rec lemma app_satisfies (inv: 'a->bool)(l1 l2: list 'a)
+    requires { length (l1++l2) <= max_int63 }
     requires { satisfies inv l1 }
     requires { satisfies inv l2 }
     ensures { satisfies inv (l1++l2) } 
@@ -177,8 +179,9 @@ module ListAppend
   lemma app_neutral: 
     neutral (fun (_:list 'a) -> true) (++) Nil
 
-  let rec lemma nth_append_left (l1 l2: list 'a) (i: int)
+  let rec lemma nth_append_left (l1 l2: list 'a) (i: int63)
     requires { 0 <= i < length l1 }
+    requires { length (l1++l2) <= max_int63 }
     ensures { (l1++l2)[i] = l1[i] }
   = match l1 with
     | Nil -> ()
@@ -188,16 +191,18 @@ module ListAppend
       else nth_append_left xs l2 (i-1)
     end
 	  
-  let rec lemma nth_append_right (l1 l2: list 'a) (i: int)
+	  (* FIXME passage de l'indice en type int ?*)
+  (*let rec lemma nth_append_right (l1 l2: list 'a) (i: int63)
     requires { length l1 <= i < length (l1++l2) }
-    ensures { (l1++l2)[i] = l2[i-length l1] }
+    requires { length (l1++l2) <= max_int63 }
+    ensures { (l1++l2)[i] = l2[i-(length l1)] }
   = match l1 with 
 	  | Nil -> ()
 	  | Cons _ xs -> 
 	    if i = 0 
 	    then ()
 	    else nth_append_right xs l2 (i-1)
-	  end
+	  end*)
 
 end
 
@@ -206,11 +211,13 @@ end
 module ListInit
   use ListBasic
   use ListAppend
-  use Int
+  use Int63
+  use int.Int
 
-  let rec function init_aux (start: int) (size:int) (f : int ->'a) : list 'a
-    ensures { forall i:int. 0 <= i < length result -> result[i] = f (start+i) }
-    ensures { length result = max 0 size } 
+  let rec function init_aux (start: int63) (size:int63) (f : int63 ->'a) : list 'a
+    ensures { min_int63 <= size <= max_int63 }
+    (*ensures { forall i:int63. 0 <= to_int i < length result -> result[i] = f (start+i) }*)
+    ensures { length result = max (0:int63) size } 
     variant { size }
   = if size <= 0 
     then Nil 
@@ -218,31 +225,31 @@ module ListInit
 
   (** [init size f] creates a list of length [size] such that its element at 
       position [n] with [0 <= n < size] is [(f n)]. *)
-  let rec function init (size:int) (f : int ->'a) : list 'a 
-    ensures { forall i:int. 0 <= i < length result -> result[i] = f i }
-    ensures { length result = max 0 size } 
+  let rec function init (size:int63) (f : int63 ->'a) : list 'a 
+    ensures { forall i:int63. 0 <= i < length result -> result[i] = f i }
+    (*ensures { length result = max 0 size } *)
   = init_aux 0 size f
 
   (** [from_to n1 n2] creates the list [n1;...;n2]. *) 
-  let rec function from_to (start : int) (finish : int) : list int 
+  let rec function from_to (start : int63) (finish : int63) : list int63 
     ensures { start > finish -> length result = 0 }
     ensures { start <= finish -> length result = finish - start + 1 }
-    ensures { forall i:int. 0 <= i < length result -> result[i] = start + i }
+    ensures { forall i:int63. 0 <= i < length result -> result[i] = start + i }
     variant { finish - start }
   = init_aux start (finish-start+1) (fun i->i)
 
-   let rec lemma from_to_succ (start finish: int)
+   (*let rec lemma from_to_succ (start finish: int63)
     requires { start <= finish } 
-    ensures { from_to start finish = 
+    (*ensures { from_to start finish = 
               (from_to start (finish - 1)) ++ Cons finish Nil }
-    variant { finish - start }
+    variant { finish - start }*)
   = if finish <= start
     then ()
-    else from_to_succ (start+1) finish 
+    else from_to_succ (start+1) finish *)
 
 end
 
-(** {3 Rev} *)
+(*(** {3 Rev} *)
 
 module ListRev
   use ListBasic

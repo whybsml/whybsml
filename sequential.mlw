@@ -7,12 +7,12 @@ module Int
   use export int.Int
   use export int.EuclideanDivision
 
-  let function max (x : int) (y : int) : int 
+  let function max (x : int) (y : int) : int
     ensures { result = x \/ result = y }
     ensures { result >= x /\ result >= y }
   = if x < y then y else x 
 
-  let function min (x : int) (y : int) : int 
+  let function min (x : int) (y : int) : int
     ensures { result = x \/ result = y }
     ensures { result <= x /\ result <= y }
   = if x < y then x else y
