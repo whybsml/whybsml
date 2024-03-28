@@ -191,7 +191,7 @@ module ListAppend
       else nth_append_left xs l2 (i-1)
     end
 	  
-	  (* FIXME passage de l'indice en type int ?*)
+	   (*FIXME passage de l'indice en type int ?*)
   (*let rec lemma nth_append_right (l1 l2: list 'a) (i: int63)
     requires { length l1 <= i < length (l1++l2) }
     requires { length (l1++l2) <= max_int63 }
@@ -216,7 +216,7 @@ module ListInit
 
   let rec function init_aux (start: int63) (size:int63) (f : int63 ->'a) : list 'a
     ensures { min_int63 <= size <= max_int63 }
-    (*ensures { forall i:int63. 0 <= to_int i < length result -> result[i] = f (start+i) }*)
+    (*ensures { forall i:int63. 0 <= to_int i < length result -> result[i] = f ((start+i):int63) }*)
     ensures { length result = max (0:int63) size } 
     variant { size }
   = if size <= 0 
@@ -226,47 +226,52 @@ module ListInit
   (** [init size f] creates a list of length [size] such that its element at 
       position [n] with [0 <= n < size] is [(f n)]. *)
   let rec function init (size:int63) (f : int63 ->'a) : list 'a 
+    requires { 0 <= size < max_int63 } 
     ensures { forall i:int63. 0 <= i < length result -> result[i] = f i }
-    (*ensures { length result = max 0 size } *)
+    ensures { length result = max (0:int63) size } 
   = init_aux 0 size f
 
   (** [from_to n1 n2] creates the list [n1;...;n2]. *) 
   let rec function from_to (start : int63) (finish : int63) : list int63 
+    requires { min_int63 <= start <= max_int63 }
+    requires { min_int63 <= finish <= max_int63 }
+    requires { min_int63 <= finish-start}
     ensures { start > finish -> length result = 0 }
     ensures { start <= finish -> length result = finish - start + 1 }
     ensures { forall i:int63. 0 <= i < length result -> result[i] = start + i }
     variant { finish - start }
   = init_aux start (finish-start+1) (fun i->i)
 
-   (*let rec lemma from_to_succ (start finish: int63)
+   let rec lemma from_to_succ (start finish: int63)
     requires { start <= finish } 
-    (*ensures { from_to start finish = 
-              (from_to start (finish - 1)) ++ Cons finish Nil }
-    variant { finish - start }*)
+    ensures { from_to start finish = 
+              (from_to start (add63 finish (-1:int63))) ++ Cons finish Nil }
+    variant { finish - start }
   = if finish <= start
     then ()
-    else from_to_succ (start+1) finish *)
+    else from_to_succ (add63 start (1:int63)) finish 
 
 end
 
-(*(** {3 Rev} *)
+(** {3 Rev} *)
 
-module ListRev
+(*module ListRev
   use ListBasic
   use ListAppend
   use Int
   
   let rec rev_aux (xs acc: list 'a) : list 'a 
+    requires { length xs + length acc < max_int63 }
     ensures { length result = length xs + length acc }
-    ensures { forall i:int. 0 <= i < length xs -> 
+    ensures { forall i:int63. 0 <= i < length xs -> 
                         result[i] = xs[length xs - 1 - i] }
-    ensures { forall i:int. 0 <= i < length acc -> 
+    ensures { forall i:int63. 0 <= i < length acc -> 
                         result[length xs + i] = acc[i] }
     variant { xs }
   = match xs with 
     | Nil -> acc
     | Cons x' xs' -> 
-      assert { forall i:int. 0 <= i < length acc -> 
+      assert { forall i:int63. 0 <= i < length acc -> 
                         acc[i] = (Cons x' acc)[i+1] };
       rev_aux xs' (Cons x' acc)
     end 
@@ -277,19 +282,22 @@ module ListRev
                         result[i] = xs[length xs - 1 - i] }
   = rev_aux xs Nil 
  
-end 
+end *)
  
 (** {3 Map} *)
 
 module ListMap
   use ListBasic
   use ListAppend
-  use Int
+  use int.Int
+  use Int63
 
   (** [map f [x1;...;xn]] = [f x1;...;f xn] *) 
+  (* FIXME besoin d'un lemme pour encadrer f ? *)
   let rec function map (f: 'a -> 'b) (xs: list 'a) : list 'b 
+    requires { length xs <= max_int63 }
     ensures { length result = length xs }
-    ensures { forall i:int. 0 <= i < length xs -> result[i] = f (xs[i]) }
+    ensures { forall i:int63. 0 <= to_int i < length xs < max_int63 -> result[i] = f (xs[i]) }
     variant { xs }
   = match xs with 
     | Nil -> Nil
@@ -298,6 +306,7 @@ module ListMap
     
   let rec lemma map_ext (f g: 'a->'b)(xs: list 'a) 
     requires { forall x: 'a. f x = g x }
+    requires { length xs <= max_int63 }
     ensures { map f xs = map g xs } 
   = match xs with 
     | Nil -> ()
@@ -305,6 +314,7 @@ module ListMap
     end
 
   let rec lemma map_map (f: 'b->'c) (g: 'a->'b) (l: list 'a)
+    requires { length l < max_int63 }
     ensures { map f (map g l) = map (fun x->f(g x)) l }
   = match l with 
     | Nil -> ()
@@ -312,6 +322,7 @@ module ListMap
     end
 
   let rec lemma map_app (f:'a->'b) (l1 l2: list 'a)
+    requires { length l1 + length l2 < max_int63 }
     ensures { map f (l1++l2) = (map f l1)++(map f l2) }
   = match l1 with 
     | Nil -> ()
@@ -319,12 +330,12 @@ module ListMap
     end
     
   lemma map_cons: 
-    forall f:'a ->'b, x : 'a,  xs : list 'a. 
-      map f (Cons x xs) = Cons (f x)(map f xs)
+    forall f:'a ->'b, x : 'a,  xs : list 'a. length xs < max_int63 
+    -> map f (Cons x xs) = Cons (f x)(map f xs)
 
 end 
 
-(** {3 Tail recursive map } *)
+(*(** {3 Tail recursive map } *)
 
 module ListTailRecMap
   use ListBasic
@@ -363,12 +374,12 @@ end
 
 module ListMap2
   use ListBasic
-  use Int
+  use Int63
   
   (** [map2 f [x1;...;xn][y1;...;yn] = [f x1 y1;...;f xn yn] *) 
   let rec function map2 (f: 'a->'b->'c) (xs: list 'a) (ys: list 'b) : list 'c
     ensures { length result = min (length xs) (length ys) }
-    ensures { forall i:int. 0 <= i < length result -> result[i] = f (xs[i])(ys[i]) }
+    ensures { forall i:int63. 0 <= to_int i < length result -> result[i] = f (xs[i])(ys[i]) }
     variant { xs }
   = match xs, ys with 
     | Nil, _ -> Nil
@@ -376,9 +387,9 @@ module ListMap2
     | Cons x xs, Cons y ys -> Cons (f x y) (map2 f xs ys)
     end
 
-end
+end*)
 
-(** {3 Map3} *)
+(** {3 Map3}
 
 module ListMap3
   use ListBasic
@@ -395,7 +406,7 @@ module ListMap3
     | Cons x xs, Cons y ys, Cons z zs -> Cons (f x y z) (map3 f xs ys zs)
     end
   
-end
+end*)
 
 (** {3 Folds} *)
 
@@ -428,22 +439,24 @@ module ListFoldMonoid
   use ListFold  
   use ListBasic
   use Algebra
-  use Int
+  use Int63
+  use int.Int
     
-  let rec lemma fold_left_inv (inv:'a->bool)(op:'a->'a->'a)(x:'a)(xs: list 'a)
-    requires { inv x /\ forall i:int. 0<=i<length xs->inv (xs[i]) }
+  (*let rec lemma fold_left_inv (inv:'a->bool)(op:'a->'a->'a)(x:'a)(xs: list 'a)
+    requires { inv x /\ forall i:int63. 0 <= to_int i < length xs ->inv (xs[i]) }
     requires { preserves inv op }
     ensures { inv (fold_left op x xs) }
   = match xs with 
     | Nil -> ()
     | Cons x' xs' -> 
-        let _ = assert { forall i:int. 0<=i<length xs'-> xs'[i] = xs[i+1] } in
+        let _ = assert { forall i:int63. 0 <= to_int i < length xs'-> xs'[i] = xs[i+1] } in
         fold_left_inv inv op (op x x') xs' 
-    end  
+    end  *)
     
   let rec lemma fold_left_preserves     
     (inv:'a->bool)(op:'a->'a->'a)(a:'a)(l: list 'a)
     requires { inv a /\ satisfies inv l }
+    requires { length l <= max_int63 }
     requires { preserves inv op }
     ensures { inv (fold_left op a l) } 
   = match l with 
@@ -451,7 +464,7 @@ module ListFoldMonoid
     | Cons x xs -> fold_left_preserves inv op (op x a) xs
     end
        
-  let rec lemma fold_left_prop (inv:'a->bool)(op:'a->'a->'a)(a b:'a)
+  (*let rec lemma fold_left_prop (inv:'a->bool)(op:'a->'a->'a)(a b:'a)
     (l: list 'a)
     requires { inv a /\ inv b /\ satisfies inv l }
     requires { associative inv op }
@@ -463,47 +476,49 @@ module ListFoldMonoid
       assert { forall i:int. 0<=i<length xs -> xs[i] = l[i+1] };
       fold_left_prop inv op (op a b) x xs;
       fold_left_prop inv op b x xs 
-    end
+    end*)
   
-  let lemma fold_left_app_prop
+  (*let lemma fold_left_app_prop
     (x:list 'a) (xs:list(list 'a)) 
     ensures { fold_left (++) (x ++ Nil) xs =
               x ++ fold_left (++) Nil xs } 
-  = fold_left_prop (fun _->true) (++) x Nil xs
+  = fold_left_prop (fun _->true) (++) x Nil xs*)
   
 end
 
 (** {3 Flatten} *)
 
-module ListFlatten
+(*module ListFlatten
   use ListBasic
   use ListFold
   use ListFoldMonoid
   use ListAppend
   use ListMap
   use Algebra
-  use Int
+  use Int63 
+  use int.Int
 
   let function flatten (l:list(list 'a)) : list 'a = 
     fold_left (++) Nil l
     
-  let rec lemma flatten_satisfies (inv: 'a->bool) 
+  (*let rec lemma flatten_satisfies (inv: 'a->bool) 
     (ll: list(list 'a)) 
-    requires { forall i:int. 0 <= i < length ll -> 
+    requires { length l1 <= max_int63 }
+    requires { forall i:int63. 0 <= to_int i < length ll -> 
                         satisfies inv (ll[i]) }
     ensures { satisfies inv (flatten ll) } 
   = match ll with 
     | Nil -> ()
     | Cons l ll' -> 
       let _ = assert { flatten ll = l ++ flatten ll' } in 
-      let _ = assert { forall i:int. 0 <= i < length ll' -> 
+      let _ = assert { forall i:int63. 0 <= i < length ll' -> 
                                 satisfies inv (ll'[i]) = 
                                 satisfies inv (ll[i+1]) } in
       flatten_satisfies inv ll';
       let _ = assert { satisfies inv (flatten ll') } in
       let _ = assert { satisfies inv l } in
       ()
-    end 
+    end *)
         
   let rec lemma flatten_cons (x: list 'a)(xs: list(list 'a))
     ensures { flatten(Cons x xs) = x ++ (flatten xs) }
@@ -748,7 +763,7 @@ module ListFilter
     | Cons _ xs -> filter_append p xs l2 
     end 
 
-end
+end*)
 
 (** {3 All on lists} *)
 
@@ -757,16 +772,15 @@ module List
   use export ListExtensionality
   use export ListAppend
   use export ListInit
-  use export ListRev
+  (*use export ListRev*)
   use export ListMap
-  use export ListTailRecMap
+  (*use export ListTailRecMap*)
   use export ListFold
   use export ListFoldMonoid
-  use export ListFlatten
+  (*use export ListFlatten
   use export ListSum
   use export ListMaximum
   use export ListFirstHomomorphismTheorem
   use export ListFirstnSkipn
-  use export ListPrefix
+  use export ListPrefix*)
 end
-*)

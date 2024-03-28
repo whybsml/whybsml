@@ -10,10 +10,14 @@ module BSML63
       machine that runs the program. *)
 
   val constant bsp_p : int63
+  
 
   (** There is at least one processor in a parallel machine. *)
 
   axiom at_least_one_processor : bsp_p > 0
+  
+  (** We can't overcome the limit of int in number of processors *)
+  axiom max_processors : bsp_p <= max_int63
 
   (** The type `par` of parallel vectors is polymorphic. *)
   

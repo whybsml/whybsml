@@ -12,7 +12,6 @@ module Base
 
   (** `procs()` is the list of all processor identifiers *)
   let function procs() 
-    (*requires { bsp_p < max_int63 }*)
     ensures { forall i:int. 0 <= i < bsp_p -> result[i] = i }
     ensures { length result = bsp_p }
   = from_to 0 (bsp_p-1)
