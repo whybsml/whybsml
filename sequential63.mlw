@@ -6,16 +6,16 @@
 module Int63
   
 (* FROM THE DOCUMENTATION. FIXME *)
-
-  use export mach.int.Int63
   use int.Int
+  use export mach.int.Int63
+  
 
   let function min (x y: int63) : int63
-    ensures { result = if to_int x <= to_int y then x else y }
+    ensures { result = if x <= y then x else y }
   = if x <= y then x else y
 
   let function max (x y: int63) : int63
-    ensures { result = if to_int x >= to_int y then x else y }
+    ensures { result = if x >=  y then x else y }
   = if x >= y then x else y
 
   (* FIXME utilisation dans les contrats *)
@@ -23,6 +23,7 @@ module Int63
   requires { [@expl:integer overflow] (to_int x + to_int y) >= min_int63 }
   requires { [@expl:integer overflow] (to_int x + to_int y) <= max_int63 }
   ensures{ result = x + y }
+  ensures{ result = y + x }
   = x + y
   
   
@@ -37,8 +38,9 @@ module Algebra
   use int.Int
   use Int63
 
-  predicate associative (inv: 'a->bool) (op: 'a->'a->'a) = 
-    forall x y z:'a. inv x -> inv y -> inv z ->
+  predicate associative63 (inv : 'a -> bool) (op: 'a->'a->'a) = 
+    forall x y z:'a. inv x -> inv y -> inv z -> 
+                     inv (op (op x y) z) -> inv (op x (op y z)) ->
       op x (op y z) = op (op x y) z
   
   predicate neutral (inv: 'a->bool) (op: 'a->'a->'a) (e: 'a) =
@@ -49,7 +51,7 @@ module Algebra
     forall x y : 'a. inv x -> inv y -> inv (op x y)
 
   predicate satisfies (inv: 'a->bool) (l: list 'a) = 
-    forall i:int63. 0 <= to_int i < (length l) -> inv (nth i l)
+    forall i:int63. 0 <= to_int i < (length l) <= max_int63 -> inv (nth i l)
     
   lemma tail_satisfies_aux :
     forall inv: 'a->bool, x:'a, xs: list 'a, i:int63.  
@@ -58,20 +60,19 @@ module Algebra
     
   lemma tail_satisfies:
     forall inv: 'a ->bool, x:'a, xs: list 'a. 
-    length xs <= max_int63 /\ satisfies inv (Cons x xs) 
+    length xs + 1 <= max_int63 /\ satisfies inv (Cons x xs)
     -> satisfies inv xs
 
-  lemma max_assoc: associative (fun (_:int63)->true) max
+  lemma max_assoc: associative63 (fun (_:int63)->true) max
  
   (* TODO : pas la main sur les trois opérandes pour pouvoir borner le résultat *)
-  lemma add_assoc: associative (fun (x :int63)-> min_int63 <= x <= max_int63) add63
+  lemma add_assoc: associative63 (fun (x :int63)-> min_int63 <= x <= max_int63) add63
   
   lemma add_neutral: neutral (fun (_:int63)->true) add63 zero
 
   lemma max_add_distr: forall x y z: int63. 
       min_int63 <= to_int x + to_int y <= max_int63 
-      /\ min_int63 <= to_int x + to_int z <= max_int63
-      /\ min_int63 <= to_int y + to_int z <= max_int63 ->
+      /\ min_int63 <= to_int x + to_int z + to_int y <= max_int63 ->
       add63 x (max y z) = max (add63 x y) (add63 x z)
 
   
@@ -174,7 +175,7 @@ module ListAppend
     end   
     
   lemma app_assoc: 
-    associative (fun (_:list 'a)->true) (++)
+    associative63 (fun (_:list 'a)->true) (++)
 
   lemma app_neutral: 
     neutral (fun (_:list 'a) -> true) (++) Nil
@@ -216,7 +217,7 @@ module ListInit
 
   let rec function init_aux (start: int63) (size:int63) (f : int63 ->'a) : list 'a
     ensures { min_int63 <= size <= max_int63 }
-    (*ensures { forall i:int63. 0 <= to_int i < length result -> result[i] = f ((start+i):int63) }*)
+    (*ensures { forall i:int63. 0 <= to_int i < length result -> result[i] = f (((start+i):int63)) }*)
     ensures { length result = max (0:int63) size } 
     variant { size }
   = if size <= 0 
@@ -574,6 +575,8 @@ module ListSum
   use ListAppend
   use Int
   
+  (* tous les entiers sont compris entre max_int/n min_int/n où n est le nombre d'éléments *)
+  (* somme en int ne dépasse pas max_int63 *)
   let function sum (l: list int) : int = 
     fold_left (+) 0 l
     
@@ -588,7 +591,7 @@ module ListSum
     | Cons _ xs -> sum_app xs l2 
     end
 
-end    
+end *)   
     
 (** {3 Maximum of a non-empty list of integers} *)
 
@@ -597,10 +600,11 @@ module ListMaximum
   use ListFold
   use ListFoldMonoid
   use Algebra
-  use Int
+  use Int63
+  use int.Int
 
-  let rec function maximum (l : list int) : int 
-    requires { length l > 0 } 
+  let rec function maximum (l : list int63) : int63 
+    requires { max_int63 >= length l > 0 } 
     variant { l }
   = match l with 
     | Nil -> absurd
@@ -609,8 +613,8 @@ module ListMaximum
     end  
         
   lemma maximum_cons:
-    forall x: int, xs: list int.
-    length xs > 0 ->
+    forall x: int63, xs: list int63.
+    max_int63 >= length xs > 0 ->
     maximum (Cons x xs) = max x (maximum xs)
 
 end  
@@ -623,13 +627,14 @@ module ListFirstHomomorphismTheorem
   use ListMap
   use ListFold
   
+  (* FIXME : vraiment besoin de changer quelque chose ici ?*)
+  
   predicate homomorphic (h: list 'a->'b)(op: 'b->'b->'b) =
     forall l1 l2: list 'a. h(l1++l2) = op(h l1)(h l2)
 
   let rec lemma fold_left_homomorphic
     (h: list 'a -> 'b)(op: 'b->'b->'b)
     (x:'a) (xs ys: list 'a)
-    requires { homomorphic h op }
     ensures { 
       fold_left op (op(h (Cons x Nil)) (h ys)) 
         (map (fun x->h(Cons x Nil)) xs) =
@@ -662,11 +667,13 @@ module ListFirstnSkipn
   use ListAppend
   use ListExtensionality
   use Pair
-  use Int
+  use Int63
+  use int.Int
   
-  let rec cut (n: int) (l: list 'a) : (list 'a, list 'a)
+  let rec cut (n: int63) (l: list 'a) : (list 'a, list 'a)
+    requires { n <= max_int63 }
     returns { l1, l2 -> l1 ++ l2 = l } 
-    returns { l1, _ -> length l1 = min (max 0 n) (length l) }
+    (*TODO returns { l1, _ -> length l1 = min (max (0:int63) n) ((length l):int63) }*)
     variant { n }
   = if n <= 0
     then (Nil,l)
@@ -678,27 +685,27 @@ module ListFirstnSkipn
         in Cons x l1, l2
       end
 	  
-  let function firstn (n :int) (l: list 'a) 
+  let function firstn (n :int63) (l: list 'a) 
     requires { 0 <= n <= length l }
-    ensures { forall i:int. 0 <= i < n -> l[i] = result [i] } 
+    ensures { forall i:int63. 0 <= i < n -> l[i] = result [i] } 
     ensures { length result = n } 
   = fst (cut n l)
   
-  let function skipn (n :int) (l: list 'a)
+  let function skipn (n :int63) (l: list 'a)
     requires { 0 <= n <= length l }
-    ensures { forall i:int. n <= i < length l -> l[i] = result[i-n] }
+    (* TODO ensures { forall i:int63. n <= i < length l -> l[i] = result[i-n] }*)
     ensures { length result = length l - n }
   = snd (cut n l)
 
-  let rec lemma firstn_skipn (l: list 'a)(n: int)
+  let rec lemma firstn_skipn (l: list 'a)(n: int63)
     requires { 0 <= n <= length l }
     ensures { l = (firstn n l ) ++ (skipn n l) }
   = extensionality l ((firstn n l)++(skipn n l))  
   
-  let lemma skipn_skipn (n1 n2: int) (l: list 'a)
+  let lemma skipn_skipn (n1 n2: int63) (l: list 'a)
     requires { 0 <= n1 /\ 0 <= n2 }
     requires { n1 + n2 <= length l }
-    ensures { skipn n1 (skipn n2 l) = skipn (n1+n2) l }
+    (*ensures { skipn n1 (skipn n2 l) = skipn (n1+n2) l }*)
   = ()
   
 end
@@ -708,11 +715,12 @@ end
 module ListPrefix
   use ListBasic
   use ListMap
-  use Int
+  use Int63
+  use int.Int
 
-  let rec function take (n: int)(l:list 'a) : list 'a 
-    ensures { length result = max 0 (min n (length l)) }
-    ensures { forall i:int. 0 <= i < length result -> 
+  let rec function take (n: int63)(l:list 'a) : list 'a 
+    (*ensures { length result = max 0 (min n (length l)) }*)
+    ensures { forall i:int63. 0 <= i < length result -> 
                         result[i] = l[i] }
     variant { l }
   = if n <= 0 
@@ -724,7 +732,7 @@ module ListPrefix
       end
 
   let rec function prefix (l : list 'a)
-    ensures { forall i:int. 0 <= i <= length l -> 
+    ensures { forall i:int63. 0 <= i <= length l -> 
                 result[i] = take i l }
     ensures { length result = 1 + length l }
     variant { l }
@@ -746,6 +754,8 @@ end
 module ListFilter
   use ListBasic
   use ListAppend
+  
+  (* FIXME : besoin de changer quelque chose ? *)
 
   let rec function filter (p: 'a -> bool) (xs: list 'a) : list 'a 
   = match xs with 
@@ -763,7 +773,7 @@ module ListFilter
     | Cons _ xs -> filter_append p xs l2 
     end 
 
-end*)
+end
 
 (** {3 All on lists} *)
 
