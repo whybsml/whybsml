@@ -1,10 +1,11 @@
 [strategy]
 code = "start:
-c Alt-Ergo,ALTERGO_VERSION 2. 1000
+c Alt-Ergo,ALTERGO_VERSION 2. 1000 
 c CVC4,CVC4_VERSION 2. 1000
 t split_vc start
 c Alt-Ergo,ALTERGO_VERSION 8. 4000 | CVC4,CVC4_VERSION 8. 4000
 t inline_goal start
+c Alt-Ergo,ALTERGO_VERSION 32. 4000 | CVC4,CVC4_VERSION 32. 4000
 "
 desc = "Automatic@ run@ of@ main@ provers, splitting and unfolding"
 name = "Auto_WhyBSML"
