@@ -13,8 +13,8 @@ doc:
 	why3 session html . -L .
 	-pandoc --from gfm --to html --standalone -c html/style.css README.md --output html/README.html
 
-replay:
-	why3 replay -L . session
+bench:
+	why3 bench -L . replay
 
 ide:
 	why3 ide --extra-config strategy.conf -L . session *.mlw &
@@ -25,6 +25,9 @@ wc:
 clean_config:
 	-rm -f strategy.conf
 
+clean_replay: 
+	-rm -f replay/*.bak replay/*.gz
+	
 clean_session:
 	-rm -Rf session
 	-rm -f why3session.html

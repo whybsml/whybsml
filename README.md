@@ -31,7 +31,7 @@ In the root directory:
 available in WhyIDE
 - `make ide` launches Why3 IDE
 - `make doc` generates the documentation in `html` it also generates the HTML summary of the verification session in `why3session.html`
-- `make replay` replays the verification session
+- `make bench` replays the verification session
 - `make compile` generates the OCaml code from the WhyML development and compiles all the dependencies
 - `make clean` performs all of the following: 
     - `make clean_config` removes the configured strategy
