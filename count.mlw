@@ -43,7 +43,7 @@ module Count
 
   (** {3 A Parallel Implementation} *)
 
-  let avg_par (p: 'a->bool) (dl: par (list 'a)) : int 
+  let count_par (p: 'a->bool) (dl: par (list 'a)) : int 
     ensures { result = count_spec p (to_list dl) }
   = let ghost _ = first_homomorphism_theorem (count_spec p) (+) (to_list dl) in
     reduce_par (fun _->true) (+) 0 (map_par (f p) dl)
