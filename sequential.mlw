@@ -34,17 +34,7 @@ module Algebra
   predicate neutral (inv: 'a->bool)(op: 'a->'a->'a)(e: 'a) =
     (forall x:'a. inv x -> op x e = x) /\ 
     (forall x:'a. inv x -> op e x = x)
-(*    
-  lemma neutral_right: 
-    forall inv: 'a->bool, op: 'a->'a->'a, e: 'a.
-    neutral inv op e -> 
-    forall x:'a. inv x -> op x e = x
-    
-  lemma neutral_left: 
-    forall inv: 'a->bool, op: 'a->'a->'a, e: 'a.
-    neutral inv op e -> 
-    forall x:'a. inv x -> op e x = x 
-*)    
+   
   predicate preserves (inv: 'a->bool)(op: 'a->'a->'a) = 
     forall x y: 'a. inv x -> inv y -> inv (op x y)
 
@@ -168,7 +158,6 @@ module ListExtensionality
     end  
     
 end
-
 
 (** {3 Append} *)
 
@@ -554,7 +543,6 @@ module ListFlatten
 
 end
 
-
 (** {3 Flatten properties using algebraic properties} *)
 
 module ListFlattenAlg
@@ -821,6 +809,7 @@ module ListFilter
 end
 
 (** {3 Zip} *)
+
 module ListZip
   use Int 
   use ListBasic 
@@ -862,6 +851,7 @@ module ListZip
 end
 
 (** {3 Last} *)
+
 theory ListLast
   use Int 
   use ListBasic 
@@ -1061,130 +1051,6 @@ module ListScanMonoid
 
  end 
   
-  (*
-    scanl_spec xs (fun s t->op s (q t));
-    prefix_satisfies (inv :@: q) xs;
-    assert { scanl (fun s t->op s (q t)) c xs = 
-             map (fold_left (fun s t->op s (q t)) c) (prefix xs) };
-    assert { scanl (fun s t->op s (q t)) e xs = 
-             map (fold_left (fun s t->op s (q t)) e) (prefix xs) };
-    map_map (op c)((((fun op y ys -> fold_left op y ys) 
-                  @ (fun s t-> (op @ s) @ (q @ t))) @ e)) (prefix xs);
-    assert { map (op c)(map (fold_left (fun s t->op s (q t)) e) (prefix xs)) = 
-             map (fun x -> (op @ c) @ ((((fun y0 y1 y2 -> fold_left y0 y1 y2)
-                  @ (fun s t-> (op @ s) @ (q @ t))) @ e) @ x)) (prefix xs) };  
-    assert { forall xs: list 'b, d. satisfies (fun x->inv(q x)) xs /\ inv d -> 
-               fold_left (fun s t->op s (q t)) d xs =
-               fold_left op d (map q xs) };
-    assert { forall xs: list 'b. satisfies (fun x->inv(q x)) xs ->
-               fold_left (fun s t->op s (q t)) e xs =
-               fold_left op e (map q xs) };                                   
-    assert { forall xs: list 'b. satisfies (fun x->inv(q x)) xs ->
-               fold_left (fun s t->op s (q t)) (op c e) xs =
-               fold_left op (op c e) (map q xs) };
-    assert { forall xs: list 'b. satisfies (fun x->inv(q x)) xs ->
-               fold_left op (op c e) (map q xs) =
-               op c (fold_left op e (map q xs)) };
-    assert { forall xs: list 'b. satisfies (fun x->inv(q x)) xs ->
-      fold_left  (fun s t->op s (q t)) (op c e) xs =
-      op c (fold_left (fun s t->op s (q t)) e xs)
-    };
-    assert { op c e = c };
-    map_ext_inv (satisfies (fun x -> inv(q x)))
-            (((fun (y0:'a->'b->'a) (y1:'a) (y2:list 'b) -> fold_left y0 y1 y2)
-              @ (fun (s: 'a) (t: 'b) -> (op @ s) @ (q @ t))) @ c)
-            (fun xs -> (op @ c) @ 
-              ((((fun (y0: 'a -> 'b -> 'a) (y1: 'a) (y2:list 'b) -> fold_left y0 y1 y2)
-              @ (fun (s: 'a) (t: 'b) -> (op @ s) @ (q @ t))) @ e) @ xs)) 
-            (prefix xs);                        
-   (*extensionality (scanl (fun s t->op s (q t)) c xs)
-                   (map (op c)(scanl (fun s t->op s (q t)) e xs)); *)
-*)
-
-  (*
-    assert { forall x. scanl op x Nil = Cons x Nil };
-    assert { forall c. inv c -> op c e = c };
-    match xs with 
-    | Nil -> ()
-    | Cons x xs -> 
-      scanl_map_gen xs op e q inv;
-      assert { inv (q x) };
-      assert { forall c.
-        scanl (fun s t->op s (q t)) c (Cons x xs) = 
-        Cons c (scanl (fun s t->op s (q t)) (op c (q x)) xs)
-      };
-      assert { forall c. inv c ->
-        map (op c)(scanl (fun s t->op s (q t)) e (Cons x xs)) = 
-        Cons (op c e)(map (op c)(scanl (fun s t->op s (q t)) (op e (q x)) xs))
-      };  
-      assert { op e (q x) = q x };    
-      assert { scanl (fun s t->op s (q t)) (op e (q x)) xs =
-               scanl (fun s t->op s (q t)) (q x) xs };   
-      scanl_map_gen xs op e q inv;          
-      assert { let c = q x in 
-               inv c -> 
-               scanl (fun s t->op s (q t)) c xs =
-               map (op c) (scanl (fun s t-> op s (q t)) e xs) };    
-      assert { forall c. inv c ->
-        Cons (op c e)(map (op c)(scanl (fun s t->op s (q t)) (op e (q x)) xs)) =
-        Cons (op c e)(map (op c)(map (op (q x)) (scanl (fun s t-> op s (q t)) e xs)))
-      };
-      assert { forall c a: 'a. inv a /\ inv c -> 
-        op (op c (q x)) a = op c (op (q x) a)
-      };
-      assert { true  };
-    end 
-          *)
-
-
-(*      
-Proof.
-  intros A B op e H xs q c; revert e c H.
-  induction xs as [ | x' xs' IH ]; intros e c H.
-  - simpl; now rewrite right_neutral.
-  - simpl. 
-    rewrite IH with (e:=e) by typeclasses eauto.
-    rewrite @right_neutral with (e:=e) by typeclasses eauto.
-    rewrite @left_neutral with (a:=q x') (e:=e) by typeclasses eauto.
-    rewrite IH with (c:=q x')(e:=e) by typeclasses eauto.
-    rewrite map_map.
-    f_equal; apply map_ext; intro; now rewrite associative.
-Qed.
-
-Lemma scanl_map:
-  forall `{Associative A op} e (x:A)(xs:list A),
-    scanl op (op x e) xs = map (op x)(scanl op e xs).
-  intros A op H e x xs. revert e x. induction xs as [ | x' xs' IH ].
-  - intros; simpl; do 2 f_equal.
-  - intros e x; simpl. f_equal.
-    rewrite <- IH. f_equal.
-    now rewrite associative.
-Qed.
-
-Lemma map_scanl:
-  forall A B `{Monoid A op}(q:B->A) a c,
-    scanl op c (map q a) =
-    scanl (fun (s : A) (t : B) => op s (q t)) c a.
-Proof.
-  intros A B op e H q a c.
-  repeat rewrite scanl_spec.
-  rewrite prefix_map, map_map.
-  apply map_ext; intro x.
-  symmetry. apply fold_left_map_r.
-Qed.
-  
-Lemma scanl_length:
-  forall (A B:Type)(op:A->B->A)(identity:A)(xs:list B),
-    List.length (scanl op identity xs) = S (List.length xs).
-Proof.  
-  intros A B op identity xs; generalize dependent identity; induction xs as [ | h t IHl]; intros.
-  - trivial.
-  - simpl; now rewrite IHl.
-Qed.
-end 
-
-*)
-
 (** {3 All on lists} *)
 
 module List
