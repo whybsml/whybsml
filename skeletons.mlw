@@ -10,6 +10,7 @@ module Skeletons
   use sequential.ListFold
   use sequential.ListFoldMonoid
   use sequential.ListFlatten
+  use sequential.ListFlattenAlg
   use bsml.BSML
   use stdlib.Base
   use sequential.Pair
