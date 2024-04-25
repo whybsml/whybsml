@@ -10,8 +10,8 @@
 For the verification part:
 
 - Why3 version 1.7.1
-- Alt Ergo 2.5.2 or higher
-- CVC4 version 1.8 or higher
+- Alt Ergo 2.5.2
+- CVC4 version 1.8
 
 For the compilation part:
 
@@ -49,6 +49,10 @@ In `application/mps`, `mps.byte` and `mps.native` are executable as they are. Th
 
 In `application/average`, `average.byte` and `average.native` are respectively the executable byte-code and native code versions of a program that computes the average of a distributed list of integers. Their usage is the same as the *MPS* applications.
 
+#### The *Count* application
+
+In `application/count`, `count.byte` and `count.native` are respectively the executable byte-code and native code versions of a program that counts the number of diagonal 100x100 matrices of a distributed list of matrices. Their usage is the same as the *MPS* applications.
+
 ## Structure
 
 - `README.md`: this file
@@ -66,4 +70,5 @@ In `application/average`, `average.byte` and `average.native` are respectively t
 - `extraction`: placeholder for the OCaml code extracted from our WhyML development (contains also a `Makefile`)
 - `application/mps`: an executable application that calls the parallel maximum parallel prefix sum function on a randomly generated distributed list
 - `application/average`: an executable application that calls the parallel average function on a randomly generated distributed list
+- `application/count`: an executable application that calls the parallel count function on a randomly generated distributed list
 - `ocamlmake`: Ocaml-makefile by Markus Mottl, used for compilation
