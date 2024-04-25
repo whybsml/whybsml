@@ -1,6 +1,6 @@
 FILES=Introduction.mlw bsml.mlw sequential.mlw stdlib.mlw skeletons.mlw mps.mlw
 TITLE=WhyBSML ${shell cat VERSION}
-CODE=bsml wrapper extraction application/cli application/mps application/average
+CODE=bsml wrapper extraction application/cli application/mps application/average application/count
 
 config: strategy.conf 
 
