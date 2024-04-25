@@ -133,7 +133,7 @@ module MPS
     assert { fold_left op (0, 0) (map' f l) = ms l };
     fst (fold_left op (0, 0) (map' f l))  
 
-  (** {2 A parallel implementation} *)
+  (** {2 Parallel implementations} *)
 
   (** The definitions and lemmas above are enough to verify that 
       `mps_par` satisfies the specification `mps_spec`. *)
@@ -142,5 +142,11 @@ module MPS
     ensures { result = mps_spec (to_list dl) } 
   = let mapped = map_par f dl in
     fst (reduce_par mps_sum_inv op (0, 0) mapped)  
+    
+  (** The definitions and lemmas above are enough to verify also 
+      that `mps_par'` satisfies the specification `mps_spec`. *)
+  let mps_par' (dl: par(list int)) : int 
+    ensures { result = mps_spec (to_list dl) } 
+  = fst (mapreduce_par mps_sum_inv op f (0, 0) dl)
 
 end
