@@ -16,6 +16,9 @@ doc:
 bench:
 	why3 bench -L . replay
 
+info: bench
+	why3 session info --session-stats --provers-stats replay
+
 ide:
 	why3 ide --extra-config strategy.conf -L . session *.mlw &
 
