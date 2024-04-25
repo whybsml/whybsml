@@ -20,13 +20,22 @@ let size () =
       exit 1;
     end
 
-let run_homomorphism (f: Z.t list Bsml.par -> 'b) (print: 'b -> unit): unit = 
+let maximum = 
+  function 
+  | [] -> nan 
+  | h::t -> List.fold_left max h t
+
+let run_homomorphism 
+  (make: Z.t->'a)
+  (f: 'a list Bsml.par -> 'b)
+  (print: 'b -> unit): unit = 
   Random.self_init ();
-  let input = Bsml.mkpar(fun _->create (size()/Bsmlmpi.bsp_p)) in
+  let input = 
+    Bsml.mkpar(fun _->List.map make (create (size()/Bsmlmpi.bsp_p))) in
   let _ = Bsmlmpi.start_timing() in
   let output = f input in
   let _ = Bsmlmpi.stop_timing () in
-  let cost = (fun (h::t)->List.fold_left max h t) (to_list (Bsmlmpi.get_cost())) in 
+  let cost = Bsmlmpi.get_cost() |> to_list |> maximum in 
   ignore(Bsmlmpi.mkpar(function
       | 0 ->
         begin
@@ -39,3 +48,6 @@ let run_homomorphism (f: Z.t list Bsml.par -> 'b) (print: 'b -> unit): unit =
           flush stdout
         end
       | _ -> ()))
+
+let print_Z z = 
+  print_int(Z.to_int z)
