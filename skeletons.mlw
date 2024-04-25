@@ -23,7 +23,7 @@ module Skeletons
       homomorphic function. The input of such parallel functions are 
       distributed lists, i.e. values of type `par(list 'a)`. *)
 
-  let map_par (f: 'a->'b) (dl: par (list 'a)) : par (list 'b)
+  let map_par (f: 'a->'b)(dl: par (list 'a)): par (list 'b)
     ensures { forall i:int. 0 <= i < bsp_p ->
                        get result i = map f (get dl i) }
     ensures { to_list result = map f (to_list dl) }
@@ -31,7 +31,7 @@ module Skeletons
     parfun (map' f) dl
     
   let reduce_par (ghost inv: 'a->bool)
-    (op: 'a->'a->'a) (e: 'a) (dl: par(list 'a)) : 'a 
+    (op: 'a->'a->'a)(e: 'a)(dl: par(list 'a)) : 'a 
     requires { associative inv op }
     requires { neutral inv op e }
     requires { preserves inv op }
@@ -39,8 +39,37 @@ module Skeletons
     requires { forall i:int. 0 <= i < bsp_p -> 
                         satisfies inv (get dl i) }
     ensures { result = fold_left op e (to_list dl) }
-  = let ghost _ = fold_left_flatten inv op e (list_of_par dl) in  
+  = assert { fold_left op e (flatten (list_of_par dl)) = 
+             fold_left op e (map (fun xs->fold_left op e xs) 
+                                 (list_of_par dl)) };
     let reduce_seq l = fold_left op e l in 
     let partial_reductions = parfun reduce_seq dl in 
     reduce_seq (list_of_par partial_reductions)
+
+
+  let mapreduce_par (ghost inv: 'b->bool)
+    (op: 'b->'b->'b)(f:'a->'b)(e: 'b) (dl: par(list 'a)) : 'b 
+    requires { associative inv op }
+    requires { neutral inv op e }
+    requires { preserves inv op }
+    requires { inv e }
+    requires { forall i:int. 0 <= i < bsp_p -> 
+                        satisfies inv (map f (get dl i)) }
+    ensures { result = fold_left (fun x y->op x (f y)) e (to_list dl) }
+  = assert { fold_left op e (flatten (map (map f)(list_of_par dl))) = 
+             fold_left op e (map (fun xs->fold_left op e xs)
+                                 (map (map f)(list_of_par dl))) };
+    (*let ghost _ = 
+      fold_left_flatten inv op e (map (map f) (list_of_par dl)) in *)
+    assert { forall b: 'b.
+      fold_left (fun (x: 'b) (y: 'a) -> (op @ x) @ (f @ y)) b (to_list dl) =
+      fold_left op b (map f (to_list dl)) };
+    let op' (x: 'b)(y: 'a) = op x (f y) in
+    (* let ghost _ = fold_left_map_r (to_list dl) op f in *)
+    let op' (x: 'b)(y: 'a) = op x (f y) in
+    let reduce_seq (l: list 'a): 'b = fold_left op' e l in 
+    let partial_reductions = parfun reduce_seq dl in 
+    assert { forall i. 0<=i<bsp_p -> 
+      get partial_reductions i = fold_left op e (map f (get dl i)) };
+    fold_left op e (list_of_par partial_reductions)
 end
