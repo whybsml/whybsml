@@ -1,4 +1,5 @@
 open Stdlib__Base
+open Sequential__ListTailRecMap
 
 let create (size: int) : Z.t list =
   let rec aux size list =
@@ -25,13 +26,26 @@ let maximum =
   | [] -> nan 
   | h::t -> List.fold_left max h t
 
+
+let printf =
+  let null = open_out "/dev/null" in 
+  (* Not allowed in safe BSML programming *)
+  let is_root = ref true in 
+  begin 
+    ignore(Bsmlmpi.mkpar(fun i->is_root := i=0));
+    if !is_root 
+    then Printf.printf
+    else Printf.fprintf null
+  end
+
+
 let run_homomorphism 
   (make: Z.t->'a)
   (f: 'a list Bsml.par -> 'b)
   (print: 'b -> unit): unit = 
   Random.self_init ();
   let input = 
-    Bsml.mkpar(fun _->List.map make (create (size()/Bsmlmpi.bsp_p))) in
+    Bsml.mkpar(fun _->map' make (create (size()/Bsmlmpi.bsp_p))) in
   let _ = Bsmlmpi.start_timing() in
   let output = f input in
   let _ = Bsmlmpi.stop_timing () in
