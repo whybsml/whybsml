@@ -5,7 +5,7 @@ let create (size: int) : Z.t list =
   let rec aux size list =
     if size = 0
     then list
-    else aux (size-1) ((Z.of_int((Random.int size)-(size/2)))::list) in
+    else aux (size-1) ((Z.of_int((Random.int 100)-(size/2)))::list) in
   aux size []
 
 let to_list (v:'a Bsmlmpi.par) : 'a list =
@@ -26,6 +26,10 @@ let maximum =
   | [] -> nan 
   | h::t -> List.fold_left max h t
 
+let minimum = 
+  function 
+  | [] -> nan 
+  | h::t -> List.fold_left max h t
 
 let printf =
   let null = open_out "/dev/null" in 
@@ -38,6 +42,8 @@ let printf =
     else Printf.fprintf null
   end
 
+let sync () = 
+  ignore(Bsmlmpi.put(Bsmlmpi.mkpar(fun _ _->None)))
 
 let run_homomorphism 
   (make: Z.t->'a)
@@ -46,22 +52,29 @@ let run_homomorphism
   Random.self_init ();
   let input = 
     Bsml.mkpar(fun _->map' make (create (size()/Bsmlmpi.bsp_p))) in
-  let _ = Bsmlmpi.start_timing() in
-  let output = f input in
-  let _ = Bsmlmpi.stop_timing () in
-  let cost = Bsmlmpi.get_cost() |> to_list |> maximum in 
-  ignore(Bsmlmpi.mkpar(function
+  begin 
+    sync ();
+    Bsmlmpi.start_timing();
+    let output = f input in
+    let _ = Bsmlmpi.stop_timing () in
+    let cost = Bsmlmpi.get_cost() in
+    let max = cost |> to_list |> maximum in 
+    let min = cost |> to_list |> minimum in
+    ignore(Bsmlmpi.mkpar(function
       | 0 ->
         begin
 	        print_int (Bsmlmpi.bsp_p);
           print_string "\t";
-	        print_float cost;
+	        print_float max;
+          print_string "\t";
+          print_float min;
           print_string "\t";
           print output;
           print_newline ();
           flush stdout
         end
       | _ -> ()))
+  end
 
 let print_Z z = 
   print_int(Z.to_int z)
