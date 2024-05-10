@@ -25,13 +25,11 @@ module Average
 
   let function f (x: int) = (x, 1)
   
-  lemma avg_spec_f : 
-    forall x: int. avg_spec (Cons x Nil) = f x
+  lemma avg_spec_f: forall x: int. avg_spec (Cons x Nil) = f x
   
   lemma avg_spec_Nil: avg_spec Nil = (0,0)
 
-  lemma avg_spec_homomophic: 
-    forall l1 l2: list int. 
+  lemma avg_spec_homomophic: forall l1 l2: list int. 
     avg_spec (l1 ++ l2) = op (avg_spec l1) (avg_spec l2)
     
   (** {2 A Sequential Implementation} *)
@@ -46,7 +44,8 @@ module Average
 
   let avg_par (dl: par (list int)) : (int, int) 
     ensures { result = avg_spec (to_list dl) }
-  = let ghost _ = first_homomorphism_theorem avg_spec op (to_list dl) in
+  = let ghost _ = 
+      first_homomorphism_theorem avg_spec op (to_list dl) in
     reduce_par (fun _->true) op (0,0) (map_par f dl)
 
 end

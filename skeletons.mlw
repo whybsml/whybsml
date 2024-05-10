@@ -46,7 +46,6 @@ module Skeletons
     let partial_reductions = parfun reduce_seq dl in 
     reduce_seq (list_of_par partial_reductions)
 
-
   let mapreduce_par (ghost inv: 'b->bool)
     (op: 'b->'b->'b)(f:'a->'b)(e: 'b) (dl: par(list 'a)) : 'b 
     requires { associative inv op }
@@ -68,4 +67,5 @@ module Skeletons
     assert { forall i. 0<=i<bsp_p -> 
       get partial_reductions i = fold_left op e (map f (get dl i)) };
     fold_left op e (list_of_par partial_reductions)
+    
 end

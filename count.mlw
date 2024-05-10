@@ -21,17 +21,14 @@ module Count
 
   (** We parallelize by showing `count_spec` is a homomorphic function. *)
 
-  let function f (p: 'a->bool) (x: 'a) = 
-    if p x then 1 else 0
+  let function f (p: 'a->bool) (x: 'a) = if p x then 1 else 0
   
-  lemma count_spec_f : 
-    forall p:'a ->bool, x: 'a. count_spec p (Cons x Nil) = f p x
+  lemma count_spec_f : forall p:'a ->bool, x: 'a. 
+    count_spec p (Cons x Nil) = f p x
   
-  lemma avg_spec_Nil: 
-    forall p: 'a->bool. count_spec p Nil = 0
+  lemma avg_spec_Nil: forall p: 'a->bool. count_spec p Nil = 0
 
-  lemma count_spec_homomophic: 
-    forall p: 'a->bool, l1 l2: list 'a. 
+  lemma count_spec_homomophic: forall p: 'a->bool, l1 l2: list 'a. 
     count_spec p (l1 ++ l2) = (count_spec p l1) + (count_spec p l2)
     
   (** {2 A Sequential Implementation} *)
@@ -45,7 +42,8 @@ module Count
 
   let count_par (p: 'a->bool) (dl: par (list 'a)) : int 
     ensures { result = count_spec p (to_list dl) }
-  = let ghost _ = first_homomorphism_theorem (count_spec p) (+) (to_list dl) in
+  = let ghost _ = 
+      first_homomorphism_theorem (count_spec p) (+) (to_list dl) in
     reduce_par (fun _->true) (+) 0 (map_par (f p) dl)
 
 end

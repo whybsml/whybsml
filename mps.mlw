@@ -57,14 +57,11 @@ module MPS
   
   lemma op_neutral: neutral mps_sum_inv op (0,0)
   
-  lemma op_preserves_mps_sum_inv: 
-    preserves mps_sum_inv op 
+  lemma op_preserves_mps_sum_inv: preserves mps_sum_inv op 
  
-  lemma mps_sum_inv_neutral: 
-    mps_sum_inv (0,0) 
+  lemma mps_sum_inv_neutral: mps_sum_inv (0,0) 
 
-  lemma f_establishes_mps_sum_inv: 
-    forall x:int. mps_sum_inv (f x)
+  lemma f_establishes_mps_sum_inv: forall x:int. mps_sum_inv (f x)
     
   let rec lemma maximum_map_plus (x: int) (xs: list int)
     requires { length xs > 0 }
@@ -145,6 +142,7 @@ module MPS
     
   (** The definitions and lemmas above are enough to verify also 
       that `mps_par'` satisfies the specification `mps_spec`. *)
+  
   let mps_par' (dl: par(list int)) : int 
     ensures { result = mps_spec (to_list dl) } 
   = fst (mapreduce_par mps_sum_inv op f (0, 0) dl)
