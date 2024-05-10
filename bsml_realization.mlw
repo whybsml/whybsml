@@ -1,0 +1,59 @@
+(** {1 Realization of BSML Axiomatization} *)
+
+module Realization : bsml.BSML
+  use int.Int
+    
+  (** {2 Parallel vectors} *)
+
+  (** Parallel vectors are the basic distributed data structure for BSML 
+      programs. Each parallel vector has size `bsp_p`, the number of processors of the parallel machine that runs the program. *)
+  let constant bsp_p = 16
+
+  (** There is at least one processor in a parallel machine. *)
+  lemma at_least_one_processor : bsp_p > 0
+
+  (** The type `par` of parallel vectors is polymorphic. 
+      The realization corresponds to what is called intensional 
+      vectors in Loulergue et al., Science of Computer Programming, 2000 
+      and is different from the actual implementation of BSML where a 
+      parallel vector is composed of `bsp_p` values. *)
+  type par 'a = int -> 'a
+        
+  (** In specifications only, the content of parallel vectors can be observed 
+      using function `get`. *)
+  function get (v: par 'a)(pid: int) : 'a
+  = v pid
+
+  (** {2 Primitives} *)
+
+  (** `mkpar f` creates a parallel vector that contains value `f pid` at 
+      processor `pid`, for all valid processor identifier `pid`. *)
+  let mkpar (f: int->'a): par 'a 
+    ensures { forall i:int. 0 <= i < bsp_p -> get result i = f i }
+  = f
+      
+  (** `apply vf vv` applies a vector of functions `vf` to a vector of 
+      values `vv`. *)
+  let apply (vf: par('a->'b))(vv: par 'a ): par 'b
+    ensures { forall i:int. 0 <= i < bsp_p -> 
+                  get result i = (get vf i) (get vv i) }
+  = fun pid -> (vf pid)(vv pid)
+
+  (** `proj v` is the dual of `mkpar` but the resulting function is only 
+      defined on the domain `0`, ..., `bsp_p - 1`. An application of this
+      primitive requires a full BSP super-step to execute. *)
+  let proj (v: par 'a)(pid: int) : 'a 
+    ensures { result = get v pid } 
+  = v pid 
+    
+  (** `put vf` performs data exchanges and a global synchronzation. 
+      At processor `i`, the function `get vf i` encodes the message to be sent
+      from `i` to all other processors. The result is also a vector of 
+      functions, but at each processor, each function represents the values
+      received by this processor from other processors. *)
+  let put (v: par(int->'a)): par(int->'a) 
+    ensures { forall src dst:int. 0 <= src < bsp_p -> 0 <= dst < bsp_p -> 
+                  (get result dst) src = (get v src) dst }
+  = fun dst src ->(v src) dst
+
+end
