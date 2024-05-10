@@ -8,27 +8,33 @@ module BSML
   (** Parallel vectors are the basic distributed data structure for BSML 
       programs. Each parallel vector has size `bsp_p`, the number of processors 
       of the parallel machine that runs the program. *)
+
   val constant bsp_p : int
 
   (** There is at least one processor in a parallel machine. *)
+
   axiom at_least_one_processor : bsp_p > 0
 
   (** The type `par` of parallel vectors is polymorphic. *)
+
   type par 'a
         
   (** In specifications only, the content of parallel vectors can be observed 
       using function `get`. *)
+
   function get (_: par 'a)(_: int): 'a
 
   (** {2 Primitives} *)
 
   (** `mkpar f` creates a parallel vector that contains value `f pid` at 
       processor `pid`, for all valid processor identifier `pid`. *)
+
   val mkpar (f: int->'a): par 'a 
     ensures { forall i:int. 0 <= i < bsp_p -> get result i = f i }
       
   (** `apply vf vv` applies a vector of functions `vf` to a vector of 
       values `vv`. *)
+
   val apply (vf: par('a->'b))(vv: par 'a ): par 'b
     ensures { forall i:int. 0 <= i < bsp_p -> 
                   get result i = (get vf i) (get vv i) }
@@ -36,6 +42,7 @@ module BSML
   (** `proj v` is the dual of `mkpar` but the resulting function is only 
       defined on the domain `0`, ..., `bsp_p - 1`. An application of this 
       primitive requires a full BSP super-step to execute. *)
+
   val  proj (v: par 'a)(pid: int): 'a 
     ensures { result = get v pid } 
     
@@ -44,6 +51,7 @@ module BSML
       from `i` to all other processors. The result is also a vector of 
       functions, but at each processor, each function represents the values
       received by this processor from other processors. *)
+      
   val put (v: par(int->'a)): par(int->'a) 
     ensures { forall src dst: int. 0 <= src < bsp_p -> 0 <= dst < bsp_p -> 
                   (get result dst) src = (get v src) dst }
