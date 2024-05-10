@@ -11,15 +11,15 @@ module Base
   (** {3 For programming and specification} *)
 
   (** `procs()` is the list of all processor identifiers *)
-  let function procs() 
-    ensures { forall i:int. 0 <= i < bsp_p -> result[i] = i }
-    ensures { length result = bsp_p }
+  let constant procs 
   = from_to 0 (bsp_p-1)
 
+  lemma procs_spec_nth: forall i:int. 0<=i<bsp_p -> procs[i] = i
+  lemma procs_spec_length: length procs = bsp_p
+
   (** `this()` is the parallel vector of processor identifiers. *)
-  let function this() 
-    ensures { forall i:int. 0 <= i < bsp_p -> get result i = i }
-  = mkpar(fun i->i)
+  let constant this = mkpar(fun i->i)
+  lemma this_spec: forall i:int. 0<=i<bsp_p -> get this i = i
 
   (** {3 For programming only} *)
 
@@ -53,7 +53,7 @@ module Base
   let function list_of_par (v : par 'a) : list 'a 
     ensures { forall i:int. 0 <= i < bsp_p -> result[i] = get v i }
     ensures { length result = bsp_p }
-  = map (proj v) (procs())
+  = map (proj v) procs
   
   (** `apply2 f v1 v2` apply a function with two arguments to the values of each processors. 
       The function of the processor n is applicated to the value of v1 and v2 *)
@@ -186,7 +186,7 @@ module Comm
       `<l,...,l>` such as the `j^th` element of `l` is `v_j`. *)
   let total_exchange (v: par 'a) : par (list 'a)
     ensures { forall i: int. 0 <= i < bsp_p -> get result i = list_of_par v }
-  = let vprocs = replicate (procs()) in 
+  = let vprocs = replicate procs in 
     let to_fun = totex v in 
     parfun2 map to_fun vprocs
  
@@ -247,7 +247,7 @@ module Comm
     requires { 0 <= root < bsp_p }
     ensures { forall i:int. 0 <= i < bsp_p -> (get result root)[i] = get vv i }
     ensures { forall i:int. 0 <= i < bsp_p /\ i <> root -> get result i = Nil }
-  = let procs_at_root = mkpar(fun i->if i=root then procs() else Nil) in
+  = let procs_at_root = mkpar(fun i->if i=root then procs else Nil) in
     let to_list = parfun (($) remove_option) (gather root vv) in
     parfun2 map to_list procs_at_root
 
