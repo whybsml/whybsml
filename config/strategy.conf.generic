@@ -6,6 +6,8 @@ t split_vc start
 c Alt-Ergo,ALTERGO_VERSION 8. 4000 | CVC4,CVC4_VERSION 8. 4000
 t inline_goal start
 c Alt-Ergo,ALTERGO_VERSION 32. 4000 | CVC4,CVC4_VERSION 32. 4000
+t split_all_full start
+c Alt-Ergo,ALTERGO_VERSION 64. 4000 | CVC4,CVC4_VERSION 64. 4000 
 "
 desc = "Automatic@ run@ of@ main@ provers, splitting and unfolding"
 name = "Auto_WhyBSML"
