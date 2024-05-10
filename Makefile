@@ -11,7 +11,7 @@ doc:
 	mkdir -p html
 	why3 doc --title "$(TITLE)" -L .  $(FILES) -o html
 	why3 session html . -L .
-	-pandoc --from gfm --to html --standalone -c html/style.css README.md --output html/README.html
+	-pandoc --metadata title="$(TITLE)" --from gfm --to html --standalone -c html/style.css README.md --output html/README.html
 
 bench:
 	why3 bench -L . replay
