@@ -53,7 +53,8 @@ module BSML
       received by this processor from other processors. *)
       
   val put (v: par(int->'a)): par(int->'a) 
-    ensures { forall src dst: int. 0 <= src < bsp_p -> 0 <= dst < bsp_p -> 
+    ensures { forall src dst: int. 
+                  0 <= src < bsp_p -> 0 <= dst < bsp_p -> 
                   (get result dst) src = (get v src) dst }
 
 end
