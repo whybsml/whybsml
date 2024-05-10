@@ -10,7 +10,7 @@ let create (size: int) : Z.t list =
 
 let to_list (v:'a Bsmlmpi.par) : 'a list =
   let f  = Bsmlmpi.proj v in
-  List.map f (List.map Z.to_int (procs()))
+  List.map f (List.map Z.to_int procs)
 
 let size () =
   try

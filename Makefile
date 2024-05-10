@@ -1,4 +1,4 @@
-FILES=Introduction.mlw bsml.mlw sequential.mlw stdlib.mlw skeletons.mlw mps.mlw
+FILES=Introduction.mlw bsml.mlw sequential.mlw stdlib.mlw skeletons.mlw mps.mlw average.mlw count.mlw bsml_realization.mlw
 TITLE=WhyBSML ${shell cat VERSION}
 CODE=bsml wrapper extraction application/cli application/mps application/average application/count
 
@@ -10,7 +10,7 @@ strategy.conf: config/strategy.conf.generic
 doc:
 	mkdir -p html
 	why3 doc --title "$(TITLE)" -L .  $(FILES) -o html
-	why3 session html . -L .
+	why3 session html session -L .
 	-pandoc --metadata title="$(TITLE)" --from gfm --to html --standalone -c html/style.css README.md --output html/README.html
 
 bench:

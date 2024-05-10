@@ -1,3 +1,7 @@
 module sequential.Option
     syntax val remove_option "(match %1 with Some x -> x | None -> failwith \"None\")"
 end
+
+module sequential.ListLast
+    syntax val last "(let xs = %1 in List.nth xs ((List.length xs)-1))"
+end
