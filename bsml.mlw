@@ -6,7 +6,8 @@ module BSML
   (** {2 Parallel vectors} *)
 
   (** Parallel vectors are the basic distributed data structure for BSML 
-      programs. Each parallel vector has size `bsp_p`, the number of processors of the parallel machine that runs the program. *)
+      programs. Each parallel vector has size `bsp_p`, the number of processors 
+      of the parallel machine that runs the program. *)
   val constant bsp_p : int
 
   (** There is at least one processor in a parallel machine. *)
@@ -17,32 +18,34 @@ module BSML
         
   (** In specifications only, the content of parallel vectors can be observed 
       using function `get`. *)
-  function get (_ : par 'a) (_ : int) : 'a
+  function get (_: par 'a)(_: int): 'a
 
   (** {2 Primitives} *)
 
   (** `mkpar f` creates a parallel vector that contains value `f pid` at 
       processor `pid`, for all valid processor identifier `pid`. *)
-  val mkpar (f : int -> 'a ) : par 'a 
+  val mkpar (f: int->'a): par 'a 
     ensures { forall i:int. 0 <= i < bsp_p -> get result i = f i }
       
   (** `apply vf vv` applies a vector of functions `vf` to a vector of 
       values `vv`. *)
-  val apply (f : par ('a -> 'b)) (v : par 'a ) : par 'b
-    ensures { forall i:int. 0 <= i < bsp_p -> get result i = (get f i) (get v i) }
+  val apply (vf: par('a->'b))(vv: par 'a ): par 'b
+    ensures { forall i:int. 0 <= i < bsp_p -> 
+                  get result i = (get vf i) (get vv i) }
 
   (** `proj v` is the dual of `mkpar` but the resulting function is only 
-      defined on the domain `0`, ..., `bsp_p - 1`. An application of this primitive requires a full BSP super-step to execute. *)
-  val  proj (v : par 'a) (x : int) : 'a 
-    ensures { result = get v x } 
+      defined on the domain `0`, ..., `bsp_p - 1`. An application of this 
+      primitive requires a full BSP super-step to execute. *)
+  val  proj (v: par 'a)(pid: int): 'a 
+    ensures { result = get v pid } 
     
   (** `put vf` performs data exchanges and a global synchronzation. 
       At processor `i`, the function `get vf i` encodes the message to be sent
       from `i` to all other processors. The result is also a vector of 
       functions, but at each processor, each function represents the values
       received by this processor from other processors. *)
-  val put (v : par (int -> 'a)) : par (int -> 'a) 
-    ensures { forall src dst:int. 0 <= src < bsp_p -> 0 <= dst < bsp_p -> 
-                        (get result dst) src = (get v src) dst }
+  val put (v: par(int->'a)): par(int->'a) 
+    ensures { forall src dst: int. 0 <= src < bsp_p -> 0 <= dst < bsp_p -> 
+                  (get result dst) src = (get v src) dst }
 
 end
