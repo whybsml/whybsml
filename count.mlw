@@ -1,5 +1,5 @@
 (** {1 Example: Counting the number of elements of a List
-                that satisfy a given property *)
+                that satisfy a given property} *)
 
 module Count
   use sequential.Int
@@ -15,6 +15,8 @@ module Count
   use sequential.Pair
   use sequential.Algebra
   use skeletons.Skeletons 
+
+  (** {2 Specification } *)
 
   function count_spec (p:'a ->bool) (l: list 'a) : int
   = length (filter p l)

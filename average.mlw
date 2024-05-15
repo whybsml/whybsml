@@ -1,4 +1,4 @@
-(** {1 Example: Average of a List of Integers *)
+(** {1 Example: Average of a List of Integers} *)
 
 module Average
   use sequential.Int
@@ -14,6 +14,8 @@ module Average
   use sequential.Pair
   use sequential.Algebra
   use skeletons.Skeletons 
+
+  (** {2 Specification } *)
 
   function avg_spec (l: list int) : (int, int) 
   = (sum l, length l)

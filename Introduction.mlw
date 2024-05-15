@@ -14,10 +14,16 @@ With its collection of four expressive functions and constants like "bsp_p" repr
 WhyBSML is a set of modules that formalize the BSML primitives and use this formalization to implement and verify parallel functions:
 
 {h <ul>}
-{h <li>} {h <a href="bsml.html">bsml.mlw</a>} is a formalization of the BSML primitives {h </li>}
+{h <li>} {h <a href="bsml.html">bsml.mlw</a>} is an axiomatization of the BSML primitives, and {h <a href="bsml_realization.html">bsml_realization.mlw</a>} is a simple sequential realization of this theory{h </li>}
 {h <li>} {h <a href="stdlib.html">stdlib.mlw</a>} provides verified parallel function implemented with BSML primitives and that constitute (a sub-set of) the BSML standard library {h </li>}
-{h <li>} {h <a href="skeletons.html">skeletons.mlw</a>} offers the `map` and `reduce` algorithmic skeletons. {h <a href="https://homepages.inf.ed.ac.uk/mic/Pubs/skeletonbook.pdf">Algorithmic skeletons</a>} are patterns of parallel algorithms {h </li>}
-{h <li>} {h <a href="mps.html">mps.mlw</a>} is a specification, sequential implementation, and parallel implementation of the maximum prefix sum {h </li>}
+{h <li>} {h <a href="skeletons.html">skeletons.mlw</a>} offers the `map`, `reduce`, and `mapreduce` algorithmic skeletons. {h <a href="https://homepages.inf.ed.ac.uk/mic/Pubs/skeletonbook.pdf">Algorithmic skeletons</a>} are patterns of parallel algorithms {h </li>}
+{h <li>} Applications:
+    {h <ul>}
+    {h <li>} {h <a href="mps.html">mps.mlw</a>} is a specification, sequential implementation, and parallel implementation of the maximum prefix sum {h </li>}
+    {h <li>} {h <a href="average.html">average.mlw</a>} is a specification, sequential implementation, and parallel implementation for computing the average of a list of numbers{h </li>}
+    {h <li>} {h <a href="count.html">count.mlw</a>} is a specification, sequential implementation, and parallel implementation for counting the number of elements in a list satisfying a predicate {h </li>}
+    {h </ul>}
+{h </li>}
 {h <li>} {h <a href="sequential.html">sequential.mlw</a>} is a set of sequential functions (mostly on lists) used in the other modules of WhyBSML {h </li>}
 {h </ul>}
 *)

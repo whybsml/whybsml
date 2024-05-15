@@ -18,10 +18,13 @@ module Skeletons
 
   (** Any homomorphic function can be implemented as a composition of 
       `map` and `reduce` (see `first_homomorphism_theorem` in 
-      {h <a href="sequential.html#List_">sequential.List</a>}). map_par` 
-      and `reduce_par` can be used to implement a parallel version of any 
-      homomorphic function. The input of such parallel functions are 
-      distributed lists, i.e. values of type `par(list 'a)`. *)
+      {h <a href="sequential.html#List_">sequential.List</a>}). `map_par` 
+      and `reduce_par` or `mapreduce_par` can be used to implement a 
+      parallel version of any homomorphic function. The input of such 
+      parallel functions are distributed lists, i.e. values of type 
+      `par(list 'a)`. *)
+
+  (** {2 Parallel map} *)
 
   let map_par (f: 'a->'b)(dl: par (list 'a)): par (list 'b)
     ensures { forall i:int. 0 <= i < bsp_p ->
@@ -29,6 +32,8 @@ module Skeletons
     ensures { to_list result = map f (to_list dl) }
   = let ghost _ = flatten_map f (list_of_par dl) in
     parfun (map' f) dl
+
+  (** {2 Parallel reduce} *)
     
   let reduce_par (ghost inv: 'a->bool)
     (op: 'a->'a->'a)(e: 'a)(dl: par(list 'a)) : 'a 
@@ -45,6 +50,8 @@ module Skeletons
     let reduce_seq l = fold_left op e l in 
     let partial_reductions = parfun reduce_seq dl in 
     reduce_seq (list_of_par partial_reductions)
+
+  (** {2 Parallel mapreduce} *)
 
   let mapreduce_par (ghost inv: 'b->bool)
     (op: 'b->'b->'b)(f:'a->'b)(e: 'b) (dl: par(list 'a)) : 'b 
