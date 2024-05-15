@@ -51,7 +51,7 @@ In `application/average`, `average.byte` and `average.native` are respectively t
 
 #### The *Count* application
 
-In `application/count`, `count.byte` and `count.native` are respectively the executable byte-code and native code versions of a program that counts the number of diagonal 100x100 matrices of a distributed list of matrices. Their usage is the same as the *MPS* applications.
+In `application/count`, `count.byte` and `count.native` are respectively the executable byte-code and native code versions of a program that counts the number of diagonal 50x50 matrices of a distributed list of matrices. Their usage is the same as the *MPS* applications.
 
 ## Structure
 
