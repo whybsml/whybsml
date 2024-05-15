@@ -79,13 +79,15 @@ end
 
 module Pair
 
-  (** [fst (x,y) = x] *)
+  (** `fst (x,y) = x` *)
+  
   let function fst (v: ('a, 'b)): 'a 
   = match v with 
     | (x, _) -> x
     end
 
-  (** [snd (x,y) = y] *)
+  (** `snd (x,y) = y` *)
+
   let function snd (v: ('a, 'b)): 'b
   = match v with 
     | (_, y) -> y
@@ -130,7 +132,8 @@ module ListBasic
   use export list.NthNoOpt
   use Int
     
-  (** An alias for the non-optional [nth] in list.NthNoOpt. *)
+  (** An alias for the non-optional `nth` in `list.NthNoOpt`. *)
+
   function ([])(xs: list 'a)(i: int): 'a = nth i xs
   
 end
@@ -225,14 +228,16 @@ module ListInit
     then Nil 
     else Cons (f start) (init_aux (start+1) (size-1) f)
 
-  (** [init size f] creates a list of length [size] such that its element at 
-      position [n] with [0 <= n < size] is [(f n)]. *)
+  (** `init size f` creates a list of length `size` such that its element at 
+      position `n` with `0 <= n < size` is `(f n)`. *)
+
   let rec function init (size: int)(f: int ->'a): list 'a 
     ensures { forall i:int. 0 <= i < length result -> result[i] = f i }
     ensures { length result = max 0 size } 
   = init_aux 0 size f
 
-  (** [from_to n1 n2] creates the list [n1;...;n2]. *) 
+  (** `from_to n1 n2` creates the list `[n1; ... ; n2]`. *) 
+
   let rec function from_to (start: int)(finish: int): list int 
     ensures { start > finish -> length result = 0 }
     ensures { start <= finish -> length result = finish - start + 1 }
@@ -288,7 +293,6 @@ module ListMap
   use ListAppend
   use Int
 
-  (** [map f [x1;...;xn]] = [f x1;...;f xn] *) 
   let rec function map (f: 'a -> 'b) (xs: list 'a): list 'b 
     ensures { length result = length xs }
     ensures { forall i:int. 0 <= i < length xs -> result[i] = f (xs[i]) }
@@ -384,7 +388,6 @@ module ListMap2
   use ListBasic
   use Int
   
-  (** [map2 f [x1;...;xn][y1;...;yn] = [f x1 y1;...;f xn yn] *) 
   let rec function map2 (f: 'a->'b->'c)(xs: list 'a)(ys: list 'b): list 'c
     ensures { length result = min (length xs) (length ys) }
     ensures { forall i:int. 0 <= i < length result -> 

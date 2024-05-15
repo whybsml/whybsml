@@ -23,7 +23,7 @@ module Base
 
   (** {3 For programming only} *)
 
-  (** `replicate x` replicates value [x] on all the processors. *)
+  (** `replicate x` replicates value `x` on all the processors. *)
   let replicate (x: 'a): par 'a 
     ensures { forall i:int. 0 <= i < bsp_p -> get result i = x }
   = mkpar(fun _ -> x)
@@ -49,7 +49,7 @@ module Base
                   get result i = f (get u i)(get v i)(get w i) } 
   = apply ((parfun2 f u) v) w
     
-  (** `list_of_par v` converts a parallel vector [v] into a list. 
+  (** `list_of_par v` converts a parallel vector `v` into a list. 
       This functions requires a full super-step to evaluate. *) 
   let function list_of_par (v: par 'a): list 'a 
     ensures { forall i:int. 0 <= i < bsp_p -> result[i] = get v i }
@@ -57,8 +57,8 @@ module Base
   = map (proj v) procs
   
   (** `apply2 f v1 v2` apply a function with two arguments to the values of
-      each processors. The function of the processor n is applicated to the 
-      value of v1 and v2 *)
+      each processors. For all processor, the function held at that processor
+      is applied to the values of `v1` and `v2` held at that processor. *)
   let apply2 (f: par ('a->'b->'c))(v1: par 'a)(v2: par 'b): par 'c
     ensures { forall i : int. 0 <= i < bsp_p -> 
                   get result i = (get f i) (get v1 i) (get v2 i) }
@@ -97,17 +97,6 @@ module Base
     
 end
 
-(** {2 Pipeline and Composition } *)
-
-module Tool 
-
-  let function (|>) x f = f x
-
-  let function ($) (f: 'b->'c) (g: 'a->'b) (x: 'a) : 'c
-  = f (g x)
-
-end
-
 (** {2 Communication Schemes} *)
 
 module Comm 
@@ -115,9 +104,9 @@ module Comm
   use sequential.List
   use sequential.Pair
   use sequential.Option
+  use sequential.Composition
   use bsml.BSML
   use Base
-  use Tool
 
   (** {3 Shift} *)
   
@@ -200,7 +189,7 @@ module Comm
 
   (** `bcast_proj n <v_0,...,v_{p-1}> = <v_n,...,v_n>` if
 	    `root` is a valid process number, otherwise `Bcast` is raised.
-	    The parallel cost is size*(p-1)*g+l}, where size is the
+	    The parallel cost is `size*(p-1) * g + l`, where size is the
 	    size of the value `v_n`. *)  
   let bcast_proj (root: int)(v: par 'a): par 'a
     ensures { 0 <= root < bsp_p -> 
@@ -214,7 +203,7 @@ module Comm
     
   (** `bcast_direct n <v_0,...,v_{p-1}> = <v_n,...,v_n>` if
 	    `root` is a valid process number, otherwise `Bcast` is raised.
-	    The parallel cost is size*(p-1)*g+l}, where size is the
+	    The parallel cost is `size*(p-1) * g + l`, where size is the
 	    size of the value `v_n`. *)  
   let bcast_direct (root: int)(v: par 'a): par 'a
     ensures { 0 <= root < bsp_p -> 
@@ -254,7 +243,7 @@ module Comm
     ensures { forall i:int. 0 <= i < bsp_p -> (get result root)[i] = get v i }
     ensures { forall i:int. 0 <= i < bsp_p /\ i<>root -> get result i = Nil }
   = let procs_at_root = mkpar(fun i->if i=root then procs else Nil) in
-    let to_list = parfun (($) remove_option) (gather root v) in
+    let to_list = parfun ((:@:) remove_option) (gather root v) in
     parfun2 map to_list procs_at_root
 
   (** {3 Scatter} *)
