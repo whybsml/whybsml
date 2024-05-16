@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "WhyBSML"
+version: "0.2"
+authors:
+- family-names: Loulergue
+  given-names: Frédéric
+  orcid: https://orcid.org/0000-0001-9301-7829
+- family-names: Proust
+  given-names: Olivia
+  orcid: https://orcid.org/0009-0007-7154-5365
+date-released: 2024-05-15
+license: LGPL-3.0-only
+repository-code: "https://github.com/whybsml/whybsml"
+identifiers:
+  - description: "This is the collection of archived snapshots of all versions of WhyBSML"
+    type: doi
+    value: 10.5281/zenodo.11197227
+  - description: "This is the archived snapshot of version 0.1 of WhyBSML"
+    type: doi
+    value: 10.5281/zenodo.8166092
+  - description: "This is the archived snapshot of version 0.2 of WhyBSML"
+    type: doi
+    value: 10.5281/zenodo.11197228
