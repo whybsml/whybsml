@@ -1,0 +1,145 @@
+{
+  "profile": [
+    { "prover": "cvc5@1.1.2", "size": 40, "time": 0.515 },
+    { "prover": "z3@4.13.3", "size": 32, "time": 0.173 },
+    { "prover": "alt-ergo@2.6.0", "size": 16, "time": 0.285 },
+    { "prover": "cvc4@1.8", "size": 30, "time": 0.506 }
+  ],
+  "proofs": {
+    "Algebra": {
+      "add_assoc": { "prover": "alt-ergo@2.6.0", "time": 0.035 },
+      "add_neutral": { "prover": "alt-ergo@2.6.0", "time": 0.037 },
+      "max_add_distr": { "prover": "alt-ergo@2.6.0", "time": 0.036 },
+      "max_assoc": { "prover": "alt-ergo@2.6.0", "time": 0.045 },
+      "tail_satisfies": {
+        "tactic": "split_vc",
+        "children": [
+          { "prover": "alt-ergo@2.6.0", "time": 0.029 },
+          { "prover": "alt-ergo@2.6.0", "time": 0.04 },
+          { "prover": "alt-ergo@2.6.0", "time": 0.035 },
+          { "prover": "alt-ergo@2.6.0", "time": 0.036 },
+          { "prover": "alt-ergo@2.6.0", "time": 0.038 },
+          { "prover": "alt-ergo@2.6.0", "time": 0.042 },
+          { "prover": "alt-ergo@2.6.0", "time": 0.037 }
+        ]
+      },
+      "tail_satisfies_aux": { "prover": "alt-ergo@2.6.0", "time": 0.032 },
+      "tail_satisfies_head": { "prover": "alt-ergo@2.6.0", "time": 0.032 }
+    },
+    "Composition": {},
+    "CurryUncurry": {},
+    "Int": {
+      "max": { "prover": "alt-ergo@2.6.0", "time": 0.029 },
+      "min": { "prover": "alt-ergo@2.6.0", "time": 0.031 }
+    },
+    "List": {},
+    "ListAppend": {
+      "app_assoc": { "prover": "alt-ergo@2.6.0", "time": 0.038 },
+      "app_cons": { "prover": "alt-ergo@2.6.0", "time": 0.033 },
+      "app_neutral": { "prover": "alt-ergo@2.6.0", "time": 0.041 },
+      "app_satisfies": { "prover": "alt-ergo@2.6.0", "time": 0.058 },
+      "nth_append_left": { "prover": "alt-ergo@2.6.0", "time": 0.063 },
+      "nth_append_right": { "prover": "alt-ergo@2.6.0", "time": 0.07 }
+    },
+    "ListBasic": {},
+    "ListExtensionality": {
+      "extensionality": { "prover": "alt-ergo@2.6.0", "time": 0.063 }
+    },
+    "ListFilter": {
+      "filter_append": { "prover": "alt-ergo@2.6.0", "time": 0.056 }
+    },
+    "ListFirstHomomorphismTheorem": {
+      "first_homomorphism_theorem": {
+        "prover": "alt-ergo@2.6.0",
+        "time": 2.3
+      },
+      "fold_left_homomorphic": { "prover": "alt-ergo@2.6.0", "time": 1.8 }
+    },
+    "ListFirstnSkipn": {
+      "cut": { "prover": "alt-ergo@2.6.0", "time": 0.111 },
+      "firstn": { "prover": "alt-ergo@2.6.0", "time": 0.055 },
+      "firstn_skipn": { "prover": "alt-ergo@2.6.0", "time": 0.049 },
+      "skipn": { "prover": "alt-ergo@2.6.0", "time": 0.057 },
+      "skipn_skipn": { "prover": "alt-ergo@2.6.0", "time": 0.097 },
+      "take": { "prover": "alt-ergo@2.6.0", "time": 0.118 }
+    },
+    "ListFlatten": {
+      "flatten_app": { "prover": "alt-ergo@2.6.0", "time": 0.057 },
+      "flatten_cons": { "prover": "alt-ergo@2.6.0", "time": 0.117 },
+      "flatten_fequal": { "prover": "alt-ergo@2.6.0", "time": 0.038 },
+      "flatten_map": { "prover": "alt-ergo@2.6.0", "time": 0.065 }
+    },
+    "ListFlattenAlg": {
+      "flatten_satisfies": { "prover": "alt-ergo@2.6.0", "time": 0.082 },
+      "fold_left_flatten": { "prover": "cvc4@1.8", "time": 2.1 }
+    },
+    "ListFold": {
+      "fold_left": { "prover": "alt-ergo@2.6.0", "time": 0.046 },
+      "fold_left_app": { "prover": "alt-ergo@2.6.0", "time": 0.043 },
+      "fold_left_map_r": {
+        "tactic": "split_vc",
+        "children": [
+          { "prover": "alt-ergo@2.6.0", "time": 0.049 },
+          { "prover": "cvc4@1.8", "time": 0.73 }
+        ]
+      }
+    },
+    "ListFoldMonoid": {
+      "fold_left_app_prop": { "prover": "alt-ergo@2.6.0", "time": 0.055 },
+      "fold_left_inv": { "prover": "alt-ergo@2.6.0", "time": 0.058 },
+      "fold_left_preserves": { "prover": "alt-ergo@2.6.0", "time": 0.047 },
+      "fold_left_prop": { "prover": "alt-ergo@2.6.0", "time": 0.066 }
+    },
+    "ListInit": {
+      "from_to": { "prover": "alt-ergo@2.6.0", "time": 0.067 },
+      "from_to_last": { "prover": "alt-ergo@2.6.0", "time": 8.2 },
+      "from_to_next": { "prover": "alt-ergo@2.6.0", "time": 0.921 },
+      "init": { "prover": "alt-ergo@2.6.0", "time": 0.043 },
+      "init_aux": { "prover": "alt-ergo@2.6.0", "time": 0.059 }
+    },
+    "ListLast": {},
+    "ListMap": {
+      "map": { "prover": "alt-ergo@2.6.0", "time": 0.053 },
+      "map_app": { "prover": "alt-ergo@2.6.0", "time": 0.062 },
+      "map_cons": { "prover": "alt-ergo@2.6.0", "time": 0.043 },
+      "map_ext": { "prover": "alt-ergo@2.6.0", "time": 0.048 },
+      "map_map": { "prover": "alt-ergo@2.6.0", "time": 0.072 }
+    },
+    "ListMap2": { "map2": { "prover": "alt-ergo@2.6.0", "time": 0.074 } },
+    "ListMap3": { "map3": { "prover": "alt-ergo@2.6.0", "time": 0.153 } },
+    "ListMapAlg": {
+      "map_ext_inv": { "prover": "alt-ergo@2.6.0", "time": 0.066 }
+    },
+    "ListMaximum": {
+      "maximum": { "prover": "alt-ergo@2.6.0", "time": 0.043 },
+      "maximum_cons": { "prover": "alt-ergo@2.6.0", "time": 0.08 },
+      "maximum_singleton": { "prover": "alt-ergo@2.6.0", "time": 0.038 }
+    },
+    "ListPrefix": {
+      "prefix": { "prover": "alt-ergo@2.6.0", "time": 2 },
+      "prefix_cons": { "prover": "cvc4@1.8", "time": 0.353 },
+      "prefix_map": { "prover": "alt-ergo@2.6.0", "time": 0.35 },
+      "prefix_satisfies": { "prover": "alt-ergo@2.6.0", "time": 0.054 }
+    },
+    "ListRev": {
+      "rev": { "prover": "alt-ergo@2.6.0", "time": 0.042 },
+      "rev_aux": { "prover": "alt-ergo@2.6.0", "time": 0.069 }
+    },
+    "ListSum": {
+      "sum_app": { "prover": "alt-ergo@2.6.0", "time": 0.056 },
+      "sum_cons": { "prover": "alt-ergo@2.6.0", "time": 0.069 }
+    },
+    "ListTailRecMap": {
+      "map'": { "prover": "alt-ergo@2.6.0", "time": 0.053 },
+      "map'_map": { "prover": "alt-ergo@2.6.0", "time": 0.041 },
+      "map_aux": { "prover": "alt-ergo@2.6.0", "time": 0.492 }
+    },
+    "ListZip": {
+      "zip_length": { "prover": "alt-ergo@2.6.0", "time": 0.07 },
+      "zip_map2": { "prover": "cvc4@1.8", "time": 0.522 },
+      "zip_nth": { "prover": "alt-ergo@2.6.0", "time": 0.04 }
+    },
+    "Option": {},
+    "Pair": {}
+  }
+}

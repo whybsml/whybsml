@@ -1,0 +1,33 @@
+{
+  "profile": [
+    { "prover": "alt-ergo@2.6.0", "size": 16, "time": 0.285 },
+    { "prover": "cvc4@1.8", "size": 30, "time": 0.506 }
+  ],
+  "proofs": {
+    "Skeletons": {
+      "map_par": {
+        "tactic": "split_vc",
+        "children": [
+          { "prover": "alt-ergo@2.6.0", "time": 0.065 },
+          { "prover": "alt-ergo@2.6.0", "time": 1.8 }
+        ]
+      },
+      "mapreduce_par": {
+        "tactic": "split_vc",
+        "children": [
+          { "prover": "alt-ergo@2.6.0", "time": 12.3 },
+          { "prover": "cvc4@1.8", "time": 8 },
+          { "prover": "cvc4@1.8", "time": 2.1 },
+          { "prover": "cvc4@1.8", "time": 6.6 }
+        ]
+      },
+      "reduce_par": {
+        "tactic": "split_vc",
+        "children": [
+          { "prover": "alt-ergo@2.6.0", "time": 0.296 },
+          { "prover": "alt-ergo@2.6.0", "time": 9.6 }
+        ]
+      }
+    }
+  }
+}

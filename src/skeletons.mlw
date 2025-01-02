@@ -6,6 +6,7 @@ module Skeletons
   use sequential.ListBasic
   use sequential.ListAppend
   use sequential.ListMap
+  use sequential.ListMapAlg
   use sequential.ListTailRecMap
   use sequential.ListFold
   use sequential.ListFoldMonoid
@@ -26,7 +27,7 @@ module Skeletons
 
   (** {2 Parallel map} *)
 
-  let map_par (f: 'a->'b)(dl: par (list 'a)): par (list 'b)
+  let function map_par (f: 'a->'b)(dl: par (list 'a)): par (list 'b)
     ensures { forall i:int. 0 <= i < bsp_p ->
                        get result i = map f (get dl i) }
     ensures { to_list result = map f (to_list dl) }
@@ -35,7 +36,7 @@ module Skeletons
 
   (** {2 Parallel reduce} *)
     
-  let reduce_par (ghost inv: 'a->bool)
+  let function reduce_par (ghost inv: 'a->bool)
     (op: 'a->'a->'a)(e: 'a)(dl: par(list 'a)) : 'a 
     requires { associative inv op }
     requires { neutral inv op e }
@@ -53,7 +54,7 @@ module Skeletons
 
   (** {2 Parallel mapreduce} *)
 
-  let mapreduce_par (ghost inv: 'b->bool)
+  let function mapreduce_par (ghost inv: 'b->bool)
     (op: 'b->'b->'b)(f:'a->'b)(e: 'b) (dl: par(list 'a)) : 'b 
     requires { associative inv op }
     requires { neutral inv op e }
@@ -61,13 +62,13 @@ module Skeletons
     requires { inv e }
     requires { forall i:int. 0 <= i < bsp_p -> 
                         satisfies inv (map f (get dl i)) }
-    ensures { result = fold_left (fun x y->op x (f y)) e (to_list dl) }
+    ensures { result = fold_left op e (map f (to_list dl)) }
   = assert { fold_left op e (flatten (map (map f)(list_of_par dl))) = 
              fold_left op e (map (fun xs->fold_left op e xs)
                                  (map (map f)(list_of_par dl))) };
-    assert { forall b: 'b.
-      fold_left (fun (x: 'b) (y: 'a) -> (op @ x) @ (f @ y)) b (to_list dl) =
-      fold_left op b (map f (to_list dl)) };
+    assert { forall b: 'b, l: list 'a.
+      fold_left (fun (x: 'b) (y: 'a) -> (op @ x) @ (f @ y)) b l =
+      fold_left op b (map f l) }; 
     let op' (x: 'b)(y: 'a) = op x (f y) in
     let reduce_seq (l: list 'a): 'b = fold_left op' e l in 
     let partial_reductions = parfun reduce_seq dl in 

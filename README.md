@@ -33,7 +33,7 @@ available in WhyIDE
 - `make doc` generates the documentation in `html` it also generates the HTML summary of the verification session in `why3session.html`
 - `make bench` replays the verification session (works only if Alt-Ergo V2.5.2 and CVC4 1.8 are installed and Why3 configured to use them)
 - `make compile` generates the OCaml code from the WhyML development and compiles all the dependencies
-- `make clean` performs all of the following: 
+- `make cleanup` performs all of the following: 
     - `make clean_config` removes the configured strategy
     - `make clean_session` removes the session directory
     - `make clean_doc` removes the generated documentation

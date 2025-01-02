@@ -43,12 +43,18 @@ module Algebra
     
   lemma tail_satisfies_aux:
     forall inv: 'a->bool, x:'a, xs: list 'a, i:int.  
-      0 <= i < length xs -> 
-      inv(nth i xs) = inv(nth (i+1) (Cons x xs))
+      1 <= i < length (Cons x xs) -> 
+      inv(nth (i-1) xs) = inv(nth i (Cons x xs))
     
   lemma tail_satisfies:
     forall inv: 'a ->bool, x:'a, xs: list 'a.
     satisfies inv (Cons x xs) -> satisfies inv xs
+  by satisfies inv (Cons x xs) so
+     (forall i:int. 0 <= i < length (Cons x xs) -> inv (nth i (Cons x xs))) so
+     (forall i:int. 1 <= i < length (Cons x xs) -> inv (nth i (Cons x xs))) so
+     (forall i:int. 1 <= i < length (Cons x xs) -> inv (nth (i-1) xs)) so
+     (forall i:int. 0 <= i < length xs -> inv (nth i xs)) so
+     satisfies inv xs
 
   lemma tail_satisfies_head:
     forall inv: 'a ->bool, x:'a, xs: list 'a.
@@ -183,8 +189,8 @@ module ListAppend
   = match xs with 
     | Nil -> ()
     | Cons _ xs -> app_satisfies inv xs ys
-    end   
-    
+    end 
+
   lemma app_assoc: 
     associative (fun (_:list 'a)->true) (++)
 
@@ -247,14 +253,27 @@ module ListInit
     variant { finish - start }
   = init_aux start (finish-start+1) (fun i->i)
 
-   let rec lemma from_to_succ (start finish: int)
+  let rec lemma from_to_next (start finish: int)
+    requires { start <= finish }
+    ensures { from_to start finish = Cons start (from_to (start+1) finish) }
+  = ()
+ 
+  let rec lemma from_to_last (start finish: int)
     requires { start <= finish } 
     ensures { from_to start finish = 
               (from_to start (finish - 1)) ++ Cons finish Nil }
     variant { finish - start }
-  = if finish <= start
-    then ()
-    else from_to_succ (start+1) finish 
+  = if start + 1 < finish
+    then begin 
+         from_to_last (start+1) finish;
+         assert { from_to (start+1) finish = (from_to (start+1) (finish - 1)) ++ Cons finish Nil };
+         assert { from_to start finish = Cons start (from_to (start+1) finish) so 
+                  from_to start finish = Cons start ((from_to (start+1) (finish - 1)) ++ Cons finish Nil) so 
+                  from_to start finish = (Cons start (from_to (start+1) (finish - 1))) ++ Cons finish Nil so 
+                  from_to start finish = (from_to start (finish-1)) ++ Cons finish Nil }
+         end
+    else assert { from_to start finish = Cons start (Cons finish Nil) \/ 
+                  from_to start finish = Cons start Nil }
 
 end
 
@@ -438,8 +457,8 @@ module ListFold
     | Cons x xs -> fold_left f (f e x) xs 
     end 
     
-  let rec lemma fold_left_app (op: 'a->'a->'a)(e: 'a)
-    (xs ys: list 'a)
+  let rec lemma fold_left_app (op: 'a->'b->'a)(e: 'a)
+    (xs ys: list 'b)
     ensures { fold_left op e (xs++ys) = 
               fold_left op (fold_left op e xs) ys } 
   = match xs with 
@@ -447,14 +466,36 @@ module ListFold
     | Cons x xs -> fold_left_app op (op e x) xs ys
     end 
     
-  let rec lemma fold_left_map_r (xs: list 'c) 
-    (f: 'a->'b->'a) (g: 'c->'b)
+  let rec lemma fold_left_map_r (f: 'a->'b->'a) (g: 'c->'b) (xs: list 'c) 
     ensures { forall a: 'a.
       fold_left (fun a b -> f a (g b)) a xs = 
       fold_left f a (map g xs) }
   = match xs with 
     | Nil -> ()
-    | Cons _ xs -> fold_left_map_r xs f g
+    | Cons x xs -> fold_left_map_r f g xs;
+      assert { Cons x xs = (Cons x Nil) ++ xs so 
+        forall a: 'a.
+        fold_left (fun a b -> f a (g b)) a (Cons x xs) =
+        fold_left (fun a b -> f a (g b)) a ((Cons x Nil) ++ xs) so 
+        forall a: 'a.
+        fold_left (fun a b -> f a (g b)) a (Cons x xs) =
+        fold_left (fun a b -> f a (g b)) (fold_left (fun a b -> f a (g b)) a (Cons x Nil)) xs so 
+        forall a: 'a.
+        fold_left (fun a b -> f a (g b)) a (Cons x xs) = 
+        fold_left (fun a b -> f a (g b)) (f a (g x)) xs so 
+        forall a: 'a.
+        fold_left (fun a b -> f a (g b)) a (Cons x xs) = 
+        fold_left f (f a (g x)) (map g xs) so 
+        forall a: 'a.
+        fold_left (fun a b -> f a (g b)) a (Cons x xs) = 
+        fold_left f (f a (g x)) (map g xs) so 
+        forall a: 'a.
+        fold_left (fun a b -> f a (g b)) a (Cons x xs) = 
+        fold_left f a (Cons (g x) (map g xs)) so 
+        forall a: 'a.
+        fold_left (fun a b -> f a (g b)) a (Cons x xs) = 
+        fold_left f a (map g (Cons x xs))
+      } 
     end 
     
 end
@@ -629,9 +670,6 @@ end
 
 module ListMaximum 
   use ListBasic
-  use ListFold
-  use ListFoldMonoid
-  use Algebra
   use Int
 
   let rec function maximum (xs: list int): int 
@@ -639,9 +677,13 @@ module ListMaximum
     variant { xs }
   = match xs with 
     | Nil -> absurd
-    | Cons h Nil -> h 
+    | Cons x Nil -> x
     | Cons h t -> max h (maximum t)
     end  
+        
+  lemma maximum_singleton:
+    forall x: int.
+    maximum (Cons x Nil) = x
         
   lemma maximum_cons:
     forall x: int, xs: list int.

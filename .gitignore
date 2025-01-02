@@ -1,3 +1,6 @@
+# why3dfind
+.why3find
+
 # Strategy
 strategy.conf
 
@@ -5,6 +8,8 @@ strategy.conf
 extraction/*.ml*
 
 # Why3
+why3session.xml
+why3shapes.gz
 session
 *.gz
 *html

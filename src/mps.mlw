@@ -84,6 +84,10 @@ module MPS
     map_ext ((fun y x1 -> sum (Cons y x1)) @ x) 
             ((fun y (x1:list int) -> y + sum x1) @ x) (prefix xs)
     
+  let lemma mps_spec_Nil ()
+    ensures { mps_spec Nil = 0 }
+  = assert { map sum (prefix Nil) = Cons 0 Nil }  
+    
   let lemma mps_spec_pos (l: list int)
     ensures { mps_spec l >= 0 }
   = match l with 
@@ -98,7 +102,10 @@ module MPS
     assert { max (max 0 (max 0 x)) (x + mps_spec xs) = 
              max 0 (x + mps_spec xs ) }
   
-  lemma ms_f: forall x:int. ms (Cons x Nil) = f x
+  let lemma ms_f (x:int) 
+    ensures { ms (Cons x Nil) = f x }
+  = () (* assert { map sum (prefix Nil) = Cons 0 Nil };
+    assert { ms Nil = (0, 0) } *)
 
   let rec lemma ms_homomorphic (l1 l2: list int) 
     ensures { ms (l1++l2) = op (ms l1) (ms l2) }
@@ -124,27 +131,43 @@ module MPS
   (** The definitions and lemmas above are enough to verify that 
       `mps_seq` satisfies the specification `mps_spec`. *)
 
+  let function ms_seq (l: list int) : (int, int) 
+    ensures { result = ms l } 
+  = let ghost _ = first_homomorphism_theorem ms op l in
+    (* assert { fold_left op (0, 0) (map f l) = ms l }; *)
+    assert { fold_left op (0, 0) (map f l) 
+             = fold_left op (0, 0) (map' f l) };
+    fold_left op (0, 0) (map' f l)
+
   let function mps_seq (l: list int) : int 
     ensures { result = mps_spec l } 
-  = let ghost _ = first_homomorphism_theorem ms op l in
-    assert { fold_left op (0, 0) (map' f l) = ms l };
-    fst (fold_left op (0, 0) (map' f l))  
+  = fst (ms_seq l)  
 
   (** {2 Parallel implementations} *)
 
   (** The definitions and lemmas above are enough to verify that 
       `mps_par` satisfies the specification `mps_spec`. *)
 
+  let ms_par (dl: par(list int)) : (int, int) 
+    ensures { result = ms (to_list dl) } 
+  = let mapped = map_par f dl in
+    assert { ms (to_list dl) = ms_seq (to_list dl) };
+    reduce_par mps_sum_inv op (0, 0) mapped
+
   let mps_par (dl: par(list int)) : int 
     ensures { result = mps_spec (to_list dl) } 
-  = let mapped = map_par f dl in
-    fst (reduce_par mps_sum_inv op (0, 0) mapped)  
+  = fst (ms_par dl)  
     
   (** The definitions and lemmas above are enough to verify also 
       that `mps_par'` satisfies the specification `mps_spec`. *)
   
+  let ms_par' (dl: par(list int)) : (int, int) 
+    ensures { result = ms (to_list dl) } 
+  = assert { ms (to_list dl) = ms_seq (to_list dl) };
+    mapreduce_par mps_sum_inv op f (0, 0) dl
+  
   let mps_par' (dl: par(list int)) : int 
     ensures { result = mps_spec (to_list dl) } 
-  = fst (mapreduce_par mps_sum_inv op f (0, 0) dl)
+  = fst (ms_par' dl)
 
 end

@@ -1,0 +1,15 @@
+{
+  "profile": [
+    { "prover": "alt-ergo@2.6.0", "size": 16, "time": 0.285 },
+    { "prover": "cvc4@1.8", "size": 30, "time": 0.506 }
+  ],
+  "proofs": {
+    "Average": {
+      "avg_par": { "prover": "alt-ergo@2.6.0", "time": 8.1 },
+      "avg_seq": { "prover": "alt-ergo@2.6.0", "time": 2.8 },
+      "avg_spec_Nil": { "prover": "alt-ergo@2.6.0", "time": 0.081 },
+      "avg_spec_f": { "prover": "alt-ergo@2.6.0", "time": 0.093 },
+      "avg_spec_homomophic": { "prover": "alt-ergo@2.6.0", "time": 0.068 }
+    }
+  }
+}

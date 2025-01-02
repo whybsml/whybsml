@@ -1,0 +1,28 @@
+{
+  "profile": [ { "prover": "alt-ergo@2.6.0", "size": 16, "time": 0.285 } ],
+  "proofs": {
+    "Realization": {},
+    "Realization'impl": {
+      "BSML'impl_of.apply'refn": {
+        "prover": "alt-ergo@2.6.0",
+        "time": 0.029
+      },
+      "BSML'impl_of.at_least_one_processor": {
+        "prover": "alt-ergo@2.6.0",
+        "time": 0.03
+      },
+      "BSML'impl_of.at_least_one_processor'lemma'refn": {
+        "prover": "alt-ergo@2.6.0",
+        "time": 0.03
+      },
+      "BSML'impl_of.mkpar'refn": { "prover": "alt-ergo@2.6.0", "time": 0.03 },
+      "BSML'impl_of.proj'refn": { "prover": "alt-ergo@2.6.0", "time": 0.028 },
+      "BSML'impl_of.put'refn": { "prover": "alt-ergo@2.6.0", "time": 0.028 },
+      "apply": { "prover": "alt-ergo@2.6.0", "time": 0.032 },
+      "at_least_one_processor": { "prover": "alt-ergo@2.6.0", "time": 0.03 },
+      "mkpar": { "prover": "alt-ergo@2.6.0", "time": 0.031 },
+      "proj": { "prover": "alt-ergo@2.6.0", "time": 0.028 },
+      "put": { "prover": "alt-ergo@2.6.0", "time": 0.03 }
+    }
+  }
+}

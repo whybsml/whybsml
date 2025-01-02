@@ -1,0 +1,17 @@
+{
+  "profile": [
+    { "prover": "cvc5@1.1.2", "size": 40, "time": 0.515 },
+    { "prover": "z3@4.13.3", "size": 32, "time": 0.173 },
+    { "prover": "alt-ergo@2.6.0", "size": 16, "time": 0.285 },
+    { "prover": "cvc4@1.8", "size": 30, "time": 0.506 }
+  ],
+  "proofs": {
+    "Count": {
+      "avg_spec_Nil": { "prover": "alt-ergo@2.6.0", "time": 0.055 },
+      "count_par": { "prover": "alt-ergo@2.6.0", "time": 0.915 },
+      "count_seq": { "prover": "alt-ergo@2.6.0", "time": 2.2 },
+      "count_spec_f": { "prover": "alt-ergo@2.6.0", "time": 0.123 },
+      "count_spec_homomophic": { "prover": "alt-ergo@2.6.0", "time": 0.105 }
+    }
+  }
+}

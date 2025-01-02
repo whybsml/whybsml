@@ -261,6 +261,16 @@ module Comm
       let mkmsg = mkpar(fun pid data dst ->if pid=root 
 			  then Some(partition data dst) else None) in
       let msg = put (apply mkmsg v) in
+      assert { forall i: int. 0 <= i < bsp_p ->  
+                (fun (y0:option 'b) -> remove_option y0)
+                  @ ((((fun (pid:int) (data:'a) (dst:int) ->
+                         if pid = root 
+                         then Some ((partition @ data) @ dst)
+                         else None: option 'b)
+                  @ root)
+                  @ get v root)
+                  @ i)
+                = (partition @ get v root) @ i };
 	  parfun remove_option (apply msg (replicate root))
 
 end
